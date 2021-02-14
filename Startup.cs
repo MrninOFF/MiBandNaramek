@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace MiBandNaramek
 {
@@ -27,9 +28,36 @@ namespace MiBandNaramek
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            var server = Configuration["DBServer"] ?? "localhost";
+            var port = Configuration["DBPort"] ?? "3306";
+            var user = Configuration["DBUser"] ?? "root";
+            var password = Configuration["DBPassword"] ?? "Pamariadbw0rd2021";
+            var database = Configuration["Database"] ?? "UHKMiBandNaramek";
+
+
+
+            services.AddDbContextPool<ApplicationDbContext>(
+                dbContextOptions => dbContextOptions
+                    .UseMySql(
+                        // Replace with your connection string.
+                        $"server={server};user = {user};password = {password};database = {database}",
+                        // Replace with your server version and type.
+                        // For common usages, see pull request #1233.
+                        new MariaDbServerVersion(new Version(10, 5, 8)), // use MariaDbServerVersion for MariaDB
+                        mySqlOptions => mySqlOptions
+                            .CharSetBehavior(CharSetBehavior.NeverAppend))
+                    // Everything from this point on is optional but helps with debugging.
+                    .EnableSensitiveDataLogging()
+                    .EnableDetailedErrors()
+                        );
+
+            /*
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlServer(
+                $"Server={server},{port};Database = {database};user id= {user};pwd = {password}"
+                ));
+            */
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
