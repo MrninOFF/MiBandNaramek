@@ -13,6 +13,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using OAuthHuamitech;
+using MiBandNaramek.Configuration;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace MiBandNaramek
 {
@@ -32,10 +39,10 @@ namespace MiBandNaramek
             var server = Configuration["DBServer"] ?? "localhost";
             var port = Configuration["DBPort"] ?? "3306";
             var user = Configuration["DBUser"] ?? "root";
-            var password = Configuration["DBPassword"] ?? "Pamariadbw0rd2021";
+            var password = Configuration["DBPassword"];
             var database = Configuration["Database"] ?? "UHKMiBandNaramek";
 
-
+            services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
 
             services.AddDbContextPool<ApplicationDbContext>(
                 dbContextOptions => dbContextOptions
@@ -52,17 +59,75 @@ namespace MiBandNaramek
                     .EnableDetailedErrors()
                         );
 
-            /*
-            services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(
-                $"Server={server},{port};Database = {database};user id= {user};pwd = {password}"
-                ));
-            */
+            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                    .AddRoles<IdentityRole>()
+                    .AddEntityFrameworkStores<ApplicationDbContext>();
+                            services.AddControllersWithViews();
+            
+            services.AddAuthentication()
+            .AddJwtBearer(jwt => {
+                var key = Encoding.ASCII.GetBytes(Configuration["JwtConfig:Secret"]);
+
+                jwt.SaveToken = true;
+                jwt.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    RequireExpirationTime = false
+                };
+            });
+            
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
-            services.AddControllersWithViews();
+            services.AddRazorPages();
+
+            
+            services.Configure<IdentityOptions>(options =>
+            {
+                // Password settings.
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequiredLength = 6;
+                options.Password.RequiredUniqueChars = 1;
+
+                // Lockout settings.
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.AllowedForNewUsers = true;
+
+                // User settings.
+                options.User.AllowedUserNameCharacters =
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                options.User.RequireUniqueEmail = false;
+            });
+
+            services.ConfigureApplicationCookie(options =>
+            {
+                // Cookie settings
+                options.Cookie.HttpOnly = true;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+
+                options.LoginPath = "/Identity/Account/Login";
+                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+                options.SlidingExpiration = true;
+            });
+            
+            
+            services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+
+            });
+
+            services.AddControllers();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -93,6 +158,7 @@ namespace MiBandNaramek
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
+                endpoints.MapControllers();
             });
         }
     }
