@@ -9,13 +9,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using MiBandNaramek.Areas.Identity.Data;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using OAuthHuamitech;
 using MiBandNaramek.Configuration;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
@@ -59,7 +59,7 @@ namespace MiBandNaramek
                     .EnableDetailedErrors()
                         );
 
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<MiBandNaramekUser>(options => options.SignIn.RequireConfirmedAccount = true)
                     .AddRoles<IdentityRole>()
                     .AddEntityFrameworkStores<ApplicationDbContext>();
                             services.AddControllersWithViews();
