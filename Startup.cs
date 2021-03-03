@@ -63,23 +63,28 @@ namespace MiBandNaramek
                     .AddRoles<IdentityRole>()
                     .AddEntityFrameworkStores<ApplicationDbContext>();
                             services.AddControllersWithViews();
-            
+
+            var key = Encoding.ASCII.GetBytes(Configuration["JwtConfig:Secret"]);
+
+            var tokenValidationParams = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                RequireExpirationTime = false,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            services.AddSingleton(tokenValidationParams);
+
             services.AddAuthentication()
             .AddJwtBearer(jwt => {
-                var key = Encoding.ASCII.GetBytes(Configuration["JwtConfig:Secret"]);
-
                 jwt.SaveToken = true;
-                jwt.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ValidateLifetime = true,
-                    RequireExpirationTime = false
-                };
+                jwt.TokenValidationParameters = tokenValidationParams;
             });
-            
+
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.AddRazorPages();

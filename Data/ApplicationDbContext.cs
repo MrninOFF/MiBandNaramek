@@ -1,4 +1,5 @@
 ﻿using MiBandNaramek.Areas.Identity.Data;
+using MiBandNaramek.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,6 +10,9 @@ namespace MiBandNaramek.Data
 {
     public class ApplicationDbContext : IdentityDbContext<MiBandNaramekUser>
     {
+
+        public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
 
