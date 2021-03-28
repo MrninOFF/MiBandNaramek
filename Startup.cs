@@ -36,10 +36,10 @@ namespace MiBandNaramek
         public void ConfigureServices(IServiceCollection services)
         {
 
-            var server = Configuration["DBServer"] ?? "localhost";
+            var server = Configuration["DBServer"] ?? "192.168.88.251";
             var port = Configuration["DBPort"] ?? "3306";
             var user = Configuration["DBUser"] ?? "root";
-            var password = Configuration["DBPassword"];
+            var password = Configuration["DBPassword"] ?? "Pamariadbw0rd2021";
             var database = Configuration["Database"] ?? "UHKMiBandNaramek";
 
             services.Configure<JwtConfig>(Configuration.GetSection("JwtConfig"));
@@ -64,14 +64,14 @@ namespace MiBandNaramek
                     .AddEntityFrameworkStores<ApplicationDbContext>();
                             services.AddControllersWithViews();
 
-            var key = Encoding.ASCII.GetBytes(Configuration["JwtConfig:Secret"]);
+            var key = Encoding.ASCII.GetBytes(Configuration["JwtConfig:Secret"]); // Configuration.GetValue
 
             var tokenValidationParams = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = true,
-                ValidateAudience = true,
+                ValidateIssuer = false,
+                ValidateAudience = false,
                 ValidateLifetime = true,
                 RequireExpirationTime = false,
                 ClockSkew = TimeSpan.Zero
@@ -130,7 +130,7 @@ namespace MiBandNaramek
                     .Build();
 
             });
-
+            
             services.AddControllers();
             
         }

@@ -24,7 +24,6 @@ namespace MiBandNaramek.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [AllowAnonymous]
     public class AuthManagementController : ControllerBase
     {
         private readonly UserManager<MiBandNaramekUser> _userManager;
@@ -51,15 +50,25 @@ namespace MiBandNaramek.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public string Get()
         {
-            return "xxxxxxxxxxxxxxxxxxxx " + this.User.Identity + " " + User.FindFirstValue(ClaimTypes.Expiration) + "....";
+            return "xxxxxxxxxxxxxxxxxxxx " + this.User.FindFirstValue(ClaimTypes.Email) + " " + User.FindFirstValue(ClaimTypes.Expiration) + ".... 1 - " + _userManager.GetUserId(this.User);
+        }
+
+        [HttpGet]
+        [Route("Test2")]
+        [AllowAnonymous]
+        public string Get2()
+        {
+            return "xxxxxxxxxxxxxxxxxxxx " + this.User.Identity + " " + User.FindFirstValue(ClaimTypes.Expiration) + ".... 2" + _applicationDbContext.Database.IsMySql();
         }
 
         [HttpPost]
         [Route("Login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] UserLoginRequest user)
         {
             if (ModelState.IsValid)
             {
+
                 var existingUser = await _userManager.FindByEmailAsync(user.Email);
 
                 if (existingUser == null)
@@ -102,6 +111,7 @@ namespace MiBandNaramek.Controllers
 
         [HttpPost]
         [Route("RefreshToken")]
+        [AllowAnonymous]
         public async Task<IActionResult> RefreshToken([FromBody] TokenRequest tokenRequest)
         {
             if (ModelState.IsValid)
@@ -144,9 +154,10 @@ namespace MiBandNaramek.Controllers
                     new Claim("Id", user.Id),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
                     new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(ClaimTypes.Role, Guid.NewGuid().ToString()),
                 }),
-                Expires = DateTime.UtcNow.AddSeconds(30),
+                Expires = DateTime.UtcNow.AddDays(14),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
@@ -174,10 +185,9 @@ namespace MiBandNaramek.Controllers
                 RefreshToken = refreshToken.Token,
                 Expiration = token.ValidTo,
                 CurrentTime = token.ValidFrom
-
-
             };
         }
+
         private async Task<AuthResult> VerifyAndGenerateToken(TokenRequest tokenRequest)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();

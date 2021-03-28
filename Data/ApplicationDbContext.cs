@@ -13,6 +13,8 @@ namespace MiBandNaramek.Data
 
         public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
+        public virtual DbSet<MeasuredData> MeasuredData { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
 
