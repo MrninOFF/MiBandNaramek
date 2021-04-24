@@ -14,6 +14,9 @@ namespace MiBandNaramek.Data
         public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
         public virtual DbSet<MeasuredData> MeasuredData { get; set; }
+        public virtual DbSet<BatteryData> BatteryData { get; set; }
+        public virtual DbSet<ActivityData> ActivityData { get; set; }
+        public virtual DbSet<RequestData> RequestData { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -23,9 +26,22 @@ namespace MiBandNaramek.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            // Customize the ASP.NET Identity model and override the defaults if needed.
-            // For example, you can rename the ASP.NET Identity table names and more.
-            // Add your customizations after calling base.OnModelCreating(builder);
+            // Nastavení přesnosti pro datové typy spojené s GPS
+            builder.Entity<ActivityData>().Property(e => e.Latitude).HasPrecision(38, 18);
+            builder.Entity<ActivityData>().Property(e => e.Longitude).HasPrecision(38, 18);
+            builder.Entity<ActivityData>().Property(e => e.Altitude).HasPrecision(38, 18);
+
+            // Vytvoření Unique Klíčů z atributů
+            builder.Entity<MeasuredData>()
+                    .HasIndex(e => new { e.UserId, e.Timestamp }).IsUnique();
+
+            builder.Entity<BatteryData>()
+                    .HasIndex(e => new { e.UserId, e.Timestamp }).IsUnique();
+
+            builder.Entity<ActivityData>()
+                    .HasIndex(e => new { e.UserId, e.TimestampStart }).IsUnique();
+
+
         }
 
     }

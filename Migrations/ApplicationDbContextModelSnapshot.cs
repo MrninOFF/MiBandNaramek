@@ -15,7 +15,7 @@ namespace MiBandNaramek.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 64)
-                .HasAnnotation("ProductVersion", "5.0.2");
+                .HasAnnotation("ProductVersion", "5.0.5");
 
             modelBuilder.Entity("MiBandNaramek.Areas.Identity.Data.MiBandNaramekUser", b =>
                 {
@@ -81,6 +81,88 @@ namespace MiBandNaramek.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
+            modelBuilder.Entity("MiBandNaramek.Models.ActivityData", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Altitude")
+                        .HasPrecision(38, 18)
+                        .HasColumnType("decimal(38,18)");
+
+                    b.Property<DateTime>("DateEnd")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("DateStart")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("GpxTrack")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Latitude")
+                        .HasPrecision(38, 18)
+                        .HasColumnType("decimal(38,18)");
+
+                    b.Property<decimal>("Longitude")
+                        .HasPrecision(38, 18)
+                        .HasColumnType("decimal(38,18)");
+
+                    b.Property<string>("Summary")
+                        .HasColumnType("longtext");
+
+                    b.Property<long>("TimestampEnd")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TimestampStart")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("UploadDate")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "TimestampStart")
+                        .IsUnique();
+
+                    b.ToTable("ActivityData");
+                });
+
+            modelBuilder.Entity("MiBandNaramek.Models.BatteryData", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<long>("Timestamp")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("UploadDate")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Timestamp")
+                        .IsUnique();
+
+                    b.ToTable("BatteryData");
+                });
+
             modelBuilder.Entity("MiBandNaramek.Models.MeasuredData", b =>
                 {
                     b.Property<int>("Id")
@@ -102,6 +184,9 @@ namespace MiBandNaramek.Migrations
                     b.Property<int>("Steps")
                         .HasColumnType("int");
 
+                    b.Property<long>("Timestamp")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("UploadDate")
                         .HasColumnType("bigint");
 
@@ -110,7 +195,8 @@ namespace MiBandNaramek.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "Timestamp")
+                        .IsUnique();
 
                     b.ToTable("MeasuredData");
                 });
@@ -147,6 +233,20 @@ namespace MiBandNaramek.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens");
+                });
+
+            modelBuilder.Entity("MiBandNaramek.Models.RequestData", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Request")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RequestData");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -279,6 +379,24 @@ namespace MiBandNaramek.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("MiBandNaramek.Models.ActivityData", b =>
+                {
+                    b.HasOne("MiBandNaramek.Areas.Identity.Data.MiBandNaramekUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MiBandNaramek.Models.BatteryData", b =>
+                {
+                    b.HasOne("MiBandNaramek.Areas.Identity.Data.MiBandNaramekUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MiBandNaramek.Models.MeasuredData", b =>

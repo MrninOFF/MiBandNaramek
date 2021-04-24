@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 
 namespace MiBandNaramek.Models
 {
-    // Nová třída HeartRate - Tomáš Mrňák 15.2.2021
-    public class MeasuredData
+    // Nová třída BatteryData - Tomáš Mrňák 20.4.2021
+    public class BatteryData
     {
         [JsonIgnore]
         public int Id { get; set; }
@@ -20,30 +20,18 @@ namespace MiBandNaramek.Models
 
         // Atributy //
 
-        // Čas UNIX Timestamp in Seconds !!!
-        [JsonPropertyName("timestamp")]
-        public long Timestamp { get; set; }
-
-        // Tepová frekvence
-        [JsonPropertyName("intensity")]
-        public int Intensity { get; set; }
-
-        // Tepová frekvence
-        [JsonPropertyName("heart_rate")]
-        public int HeartRate { get; set; }
-
-        // Tepová frekvence
-        [JsonPropertyName("kind")]
-        public int Kind { get; set; }
-        
-        // Tepová frekvence
-        [JsonPropertyName("steps")]
-        public int Steps { get; set; }
+        // Úroveň baterie
+        [JsonPropertyName("level")]
+        public int Level { get; set; }
 
         // Datum ve formátu YYYY-MM-DD
         [JsonIgnore]
         [DataType(DataType.Date)]
         public DateTime Date { get; set; }
+
+        // Datum
+        [JsonPropertyName("timestamp")]
+        public long Timestamp { get; set; }
 
         // Kdy byly data nahrána na server
         [JsonIgnore]
@@ -52,6 +40,5 @@ namespace MiBandNaramek.Models
         [JsonIgnore]
         [ForeignKey(nameof(UserId))]
         public MiBandNaramekUser User { get; set; }
-
     }
 }

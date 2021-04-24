@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MiBandNaramek.Controllers
@@ -34,54 +35,72 @@ namespace MiBandNaramek.Controllers
         [HttpPost]
         [Route("InsertMeasuredData")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> InsertMeasuredData([FromBody] MeasuredDataRequest measuredDataList)
+        public async Task<IActionResult> InsertMeasuredData([FromBody] JsonElement postData)
         {
+            
+             //                                   =========== LOG DO DB ===========
+                                             
+            await _applicationDbContext.RequestData.AddAsync(new RequestData() { Request = postData.ToString() });
+            if (await _applicationDbContext.SaveChangesAsync() > 0)
+            {
+
+            }
+            
+            MeasuredDataRequest measuredDataList = JsonSerializer.Deserialize<MeasuredDataRequest>(postData.ToString());
             if (ModelState.IsValid)
             {
                 try
                 {
                     var userId = await _userManager.FindByNameAsync(this.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-                    foreach (MeasuredDataFormat measuredData in measuredDataList.MeasuredData)
+                    long uploadDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+
+                    if (measuredDataList.MeasuredData != null && measuredDataList.MeasuredData.Count > 0)
                     {
-                        MeasuredData newMeasuredData = new MeasuredData()
-                        {
-                            UserId = userId.Id,
-                            HeartRate = measuredData.HeartRate,
-                            Steps = measuredData.Steps,
-                            Intensity = measuredData.Intensity,
-                            Kind = measuredData.Kind,
-                            Date = DateTimeOffset.FromUnixTimeSeconds(measuredData.Timestamp).DateTime,
-                            UploadDate = DateTimeOffset.Now.ToUnixTimeSeconds()
-                        };
-                        await _applicationDbContext.MeasuredData.AddAsync(newMeasuredData);
+                        measuredDataList.MeasuredData.ForEach(option => option.Date = DateTimeOffset.FromUnixTimeSeconds(option.Timestamp).DateTime);
+                        measuredDataList.MeasuredData.ForEach(option => option.UserId = userId.Id);
+                        measuredDataList.MeasuredData.ForEach(option => option.UploadDate = uploadDate);
+
+                        measuredDataList.MeasuredData.ForEach(option => option.Id = _applicationDbContext.MeasuredData.FirstOrDefault(find => find.UserId == option.UserId && find.Timestamp == option.Timestamp) != null ? 1 : 0);
+                        await _applicationDbContext.MeasuredData.AddRangeAsync(measuredDataList.MeasuredData.Where(option => option.Id == 0));
                     }
+
+                    if (measuredDataList.BatteryData != null && measuredDataList.BatteryData.Count > 0)
+                    {
+                        measuredDataList.BatteryData.ForEach(option => option.Date = DateTimeOffset.FromUnixTimeSeconds(option.Timestamp).DateTime);
+                        measuredDataList.BatteryData.ForEach(option => option.UserId = userId.Id);
+                        measuredDataList.BatteryData.ForEach(option => option.UploadDate = uploadDate);
+
+                        measuredDataList.BatteryData.ForEach(option => option.Id = _applicationDbContext.BatteryData.FirstOrDefault(find => find.UserId == option.UserId && find.Timestamp == option.Timestamp) != null ? 1 : 0);
+                        await _applicationDbContext.BatteryData.AddRangeAsync(measuredDataList.BatteryData.Where(option => option.Id == 0));
+                    }
+
+                    if (measuredDataList.ActivityData != null && measuredDataList.ActivityData.Count > 0)
+                    {
+                        measuredDataList.ActivityData.ForEach(option => option.DateStart = DateTimeOffset.FromUnixTimeSeconds(option.TimestampStart).DateTime);
+                        measuredDataList.ActivityData.ForEach(option => option.DateEnd = DateTimeOffset.FromUnixTimeSeconds(option.TimestampEnd).DateTime);
+                        measuredDataList.ActivityData.ForEach(option => option.UserId = userId.Id);
+                        measuredDataList.ActivityData.ForEach(option => option.UploadDate = uploadDate);
+
+                        measuredDataList.ActivityData.ForEach(option => option.Id = _applicationDbContext.ActivityData.FirstOrDefault(find => find.UserId == option.UserId && find.TimestampStart == option.TimestampStart) != null ? 1 : 0);
+                        await _applicationDbContext.ActivityData.AddRangeAsync(measuredDataList.ActivityData.Where(option => option.Id == 0));
+                    }
+
 
                     // Vložíme tam všechny data z tokenu naráz
                     await _applicationDbContext.SaveChangesAsync();
 
-                    return Ok(new MeasuredDataResult()
-                    {
-                        Success = true
-                    });
+                    return Ok();
 
                 }
                 catch
                 {
-                    return Ok(new MeasuredDataResult()
-                    {
-                        Success = false,
-                        Message = "Error during a save process"
-                    });
+                    return BadRequest();
                 }
             }
             else
             {
-                return Ok(new MeasuredDataResult()
-                {
-                    Success = false,
-                    Message = "Model is Invalid"
-                });
+                return BadRequest();
             }
         }
         

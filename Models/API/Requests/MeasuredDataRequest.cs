@@ -1,32 +1,37 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace MiBandNaramek.Models.API.Requests
 {
     public class MeasuredDataRequest
     {
-        [Required]
-        public List<MeasuredDataFormat> MeasuredData { get; set; }
+        // Stračka atribut //
+        [JsonPropertyName("verification_data")]
+        public DeviceDataFormat DeviceData { get; set; }
+
+        [JsonPropertyName("measured_data")]
+        public List<MeasuredData> MeasuredData { get; set; }
+
+        [JsonPropertyName("battery_data")]
+        public List<BatteryData> BatteryData { get; set; }
+
+        [JsonPropertyName("activity_data")]
+        public List<ActivityData> ActivityData { get; set; }
     }
 
-    public class MeasuredDataFormat
+    public class DeviceDataFormat 
     {
         [Required]
-        public long Timestamp { get; set; }
+        [JsonPropertyName("wristband_mac")]
+        public string MiBandMacAddress { get; set; }
 
         [Required]
-        public int Kind { get; set; }
-
-        [Required]
-        public int Intensity { get; set; }
-
-        [Required]
-        public int Steps { get; set; }
-
-        [Required]
-        public int HeartRate { get; set; }
+        [JsonPropertyName("device_id")]
+        public string MobileDeviceId { get; set; }
     }
 }
