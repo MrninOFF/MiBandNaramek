@@ -116,7 +116,7 @@ namespace MiBandNaramek
 
             services.ConfigureApplicationCookie(options =>
             {
-                // Cookie settings
+                // Cookie settings.
                 options.Cookie.HttpOnly = true;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
 
@@ -131,10 +131,11 @@ namespace MiBandNaramek
                 options.FallbackPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
-
             });
 
             services.AddControllers();
+
+
 
         }
 

@@ -1,0 +1,58 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model MiBandNaramek.Models.Helpers.SummaryViewData;
+
+<input type="text" name="datetimes" />
+
+<div><canvas id="lineChart"></canvas></div>
+@{ChartJSCore.Models.Chart chart = (ChartJSCore.Models.Chart)ViewData["Chart"]; }
+
+<label id="label"> @Html.Raw(chart.Data.ToString()) </label>
+
+@section Scripts {
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+    <script>
+
+        @Html.Raw(chart.CreateChartCode("lineChart"));
+
+        $(function() {
+          $('input[name="datetimes"]').daterangepicker({
+              timePicker: true,
+              opens: 'left',
+            startDate: moment().startOf('hour'),
+            endDate: moment().startOf('hour').add(32, 'hour'),
+            locale: {
+              format: 'M/DD hh:mm A'
+            }
+          },
+              function (start, end, label) {
+                 /* alert("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD')); */
+                          $.ajax({
+                                type: "POST",
+                                url: "@Url.Action("ChangeDate")",
+                              data: { newStartDate: start.format('DD/MM/YYYY H:mm'), newEndDate: end.format('DD/MM/YYYY H:mm') },
+                              dataType: "json",
+                              success: function (json) {
+                                  console.log(lineChart.data);
+                                  lineChart.data.datasets[0].data = json.datasets[0].data;
+                                  lineChart.data.labels = json.labels;
+                                  console.log(lineChart.data);
+                                  lineChart.update();
+                                  label.refresh();
+                                },
+                              error: function (req, status, error) {
+
+                                }
+                            })
+              });
+        });
+    </script>   
+}
+
+@{
+}

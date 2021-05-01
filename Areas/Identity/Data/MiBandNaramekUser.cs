@@ -9,5 +9,6 @@ namespace MiBandNaramek.Areas.Identity.Data
     // Add profile data for application users by adding properties to the MiBandNaramekUser class
     public class MiBandNaramekUser : IdentityUser
     {
+
     }
 }
