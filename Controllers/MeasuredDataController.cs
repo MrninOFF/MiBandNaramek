@@ -57,7 +57,7 @@ namespace MiBandNaramek.Controllers
 
                     if (measuredDataList.MeasuredData != null && measuredDataList.MeasuredData.Count > 0)
                     {
-                        measuredDataList.MeasuredData.ForEach(option => option.Date = DateTimeOffset.FromUnixTimeSeconds(option.Timestamp).DateTime);
+                        measuredDataList.MeasuredData.ForEach(option => option.Date = DateTimeOffset.FromUnixTimeSeconds(option.Timestamp).LocalDateTime);
                         measuredDataList.MeasuredData.ForEach(option => option.UserId = userId.Id);
                         measuredDataList.MeasuredData.ForEach(option => option.UploadDate = uploadDate);
 
@@ -67,7 +67,7 @@ namespace MiBandNaramek.Controllers
 
                     if (measuredDataList.BatteryData != null && measuredDataList.BatteryData.Count > 0)
                     {
-                        measuredDataList.BatteryData.ForEach(option => option.Date = DateTimeOffset.FromUnixTimeSeconds(option.Timestamp).DateTime);
+                        measuredDataList.BatteryData.ForEach(option => option.Date = DateTimeOffset.FromUnixTimeSeconds(option.Timestamp).LocalDateTime);
                         measuredDataList.BatteryData.ForEach(option => option.UserId = userId.Id);
                         measuredDataList.BatteryData.ForEach(option => option.UploadDate = uploadDate);
 
@@ -77,8 +77,8 @@ namespace MiBandNaramek.Controllers
 
                     if (measuredDataList.ActivityData != null && measuredDataList.ActivityData.Count > 0)
                     {
-                        measuredDataList.ActivityData.ForEach(option => option.DateStart = DateTimeOffset.FromUnixTimeSeconds(option.TimestampStart).DateTime);
-                        measuredDataList.ActivityData.ForEach(option => option.DateEnd = DateTimeOffset.FromUnixTimeSeconds(option.TimestampEnd).DateTime);
+                        measuredDataList.ActivityData.ForEach(option => option.DateStart = DateTimeOffset.FromUnixTimeSeconds(option.TimestampStart).LocalDateTime);
+                        measuredDataList.ActivityData.ForEach(option => option.DateEnd = DateTimeOffset.FromUnixTimeSeconds(option.TimestampEnd).LocalDateTime);
                         measuredDataList.ActivityData.ForEach(option => option.UserId = userId.Id);
                         measuredDataList.ActivityData.ForEach(option => option.UploadDate = uploadDate);
 

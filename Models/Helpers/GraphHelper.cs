@@ -14,6 +14,9 @@ namespace MiBandNaramek.Models.Helpers
     public class SummaryViewData
     {
         public ChartJSCore.Models.Chart Chart { get; set; }
+        public string Od { get; set; }
+        public string Do { get; set; }
+        public List<ActivityData> Activity { get; set; }
     }
 
 }

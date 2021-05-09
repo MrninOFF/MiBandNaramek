@@ -32,6 +32,9 @@ namespace MiBandNaramek.Models
         [JsonPropertyName("timestamp_end")]
         public long TimestampEnd { get; set; }
 
+        [JsonIgnore]
+        public int Steps { get; set; }
+
         // Datum ve formátu YYYY-MM-DD
         [JsonIgnore]
         [DataType(DataType.Date)]
@@ -62,5 +65,12 @@ namespace MiBandNaramek.Models
         [JsonIgnore]
         [ForeignKey(nameof(UserId))]
         public MiBandNaramekUser User { get; set; }
+
+        /********************************************/
+
+        [JsonIgnore]
+        [NotMapped]
+        public string KindLogo { get; set; }
+
     }
 }
