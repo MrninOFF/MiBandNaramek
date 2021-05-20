@@ -31,6 +31,7 @@ namespace MiBandNaramek.Models.Helpers
     public class DailyChartData
     {
         public string Name { get; set; }
+        public string VariableName { get; set; }
         public ChartJSCore.Models.Chart Chart { get; set; }
     }
 

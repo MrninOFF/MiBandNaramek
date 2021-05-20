@@ -54,7 +54,7 @@
         {
             <div>
                 <h1>@dailyChart.Name</h1>
-                <canvas id=@dailyChart.Name></canvas>
+                <canvas id=@dailyChart.VariableName></canvas>
             </div>
          }
     </div>
@@ -70,7 +70,7 @@
     @foreach (var dailyChart in Model.Charts)
     {
         <script type="text/javascript">
-           @Html.Raw(dailyChart.Chart.CreateChartCode(dailyChart.Name));
+           @Html.Raw(dailyChart.Chart.CreateChartCode(dailyChart.VariableName));
         </script>
     }
 
