@@ -4,17 +4,12 @@
 @using System.Text.Json
 @model MiBandNaramek.Models.Helpers.SummaryViewData;
 
-<div width="50%">
+<div class="h-75">
     <label>Vyberte období   :</label>
     <input class="form-control form-control-lg" width=40 type="text" name="datetimes" />
 </div>
 <div>
-    <div width="500">
-        <canvas id="lineChart"></canvas>
-        @{ChartJSCore.Models.Chart chart = Model.Chart; }
-    </div>
-
-    <div width="500">
+    <div class="w-50">
         <table class="table table-striped" id="userTable">
             <thead>
                 <tr>
@@ -53,6 +48,17 @@
             </tbody>
         </table>
     </div>
+
+    <div width="800">
+        @foreach (var dailyChart in Model.Charts)
+        {
+            <div>
+                <h1>@dailyChart.Name</h1>
+                <canvas id=@dailyChart.Name></canvas>
+            </div>
+         }
+    </div>
+
 </div>
 
 @section Scripts {
@@ -61,9 +67,14 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 
-    <script>
+    @foreach (var dailyChart in Model.Charts)
+    {
+        <script type="text/javascript">
+           @Html.Raw(dailyChart.Chart.CreateChartCode(dailyChart.Name));
+        </script>
+    }
 
-        @Html.Raw(chart.CreateChartCode("lineChart"));
+    <script>
 
         $(function () {
             console.log(@Html.Raw(Json.Serialize(Model.Od)));
