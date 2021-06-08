@@ -31,15 +31,20 @@ namespace MiBandNaramek.Controllers
         // Načtená data pro další úpravu
         private List<SummaryHelper> LoadedSummaryHelperData;
 
+        // Přihlášený uživatel
+        private string UserId;
+
         public SummaryController(ApplicationDbContext applicationDbContext, UserManager<MiBandNaramekUser> userManager)
         {
             _userManager = userManager;
             _applicationDbContext = applicationDbContext;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string User)
         {
             // Nastavím defaultní časy
+
+            UserId = User;
 
             DateTimeStart = DateTime.Now.Date.AddDays(-3).AddHours(6);
             DateTimeEnd = DateTime.Now.Date.AddHours(6);
@@ -51,12 +56,13 @@ namespace MiBandNaramek.Controllers
                 Charts = LoadSummaryDailyCharts(DateTimeStart, DateTimeEnd),
                 Activity = LoadActivityData(DateTimeStart, DateTimeEnd),
                 Do = DateTimeEnd.ToString("dd/MM/yyyy 06:00 AM", CultureInfo.InvariantCulture),
-                Od = DateTimeStart.ToString("dd/MM/yyyy 06:00 AM", CultureInfo.InvariantCulture)
+                Od = DateTimeStart.ToString("dd/MM/yyyy 06:00 AM", CultureInfo.InvariantCulture),
+                UserId = UserId
             }); 
         }
 
         [HttpGet]
-        public ActionResult ChangeDate(string Od, string Do)
+        public ActionResult ChangeDate(string Od, string Do, string User)
         {
             // Nastavím časy dle požadavku od uživatele
 
@@ -68,6 +74,8 @@ namespace MiBandNaramek.Controllers
             //
             //  K poslednímu datu musím přidat den
 
+            UserId = User;
+
             DateTimeStart = DateTime.Parse(Od);
             DateTimeEnd = DateTime.Parse(Do).AddDays(1);
 
@@ -78,7 +86,8 @@ namespace MiBandNaramek.Controllers
                 Charts = LoadSummaryDailyCharts(DateTimeStart, DateTimeEnd),
                 Activity = LoadActivityData(DateTimeStart, DateTimeEnd),
                 Do = DateTimeEnd.ToString("dd/MM/yyyy hh:mm tt", CultureInfo.InvariantCulture),
-                Od = DateTimeStart.ToString("dd/MM/yyyy hh:mm tt", CultureInfo.InvariantCulture)
+                Od = DateTimeStart.ToString("dd/MM/yyyy hh:mm tt", CultureInfo.InvariantCulture),
+                UserId = UserId
             });
         }
         
@@ -160,8 +169,8 @@ namespace MiBandNaramek.Controllers
         /// <param name="startDateTime"></param>
         /// <param name="endDateTime"></param>
         /// <param name="hearRateDataForGraph"></param>
-        /// <param name="StepsDataForGraph"></param>
-        /// <param name="IntesityDataForGraph"></param>
+        /// <param name="stepsDataForGraph"></param>
+        /// <param name="intesityDataForGraph"></param>
         private void prepareDataForDataset(DateTime startDateTime, DateTime endDateTime, out List<string> labels, out List<double?> hearRateDataForGraph, out List<double?> stepsDataForGraph, out List<double?> intesityDataForGraph)
         {
             labels = new List<string>();
@@ -235,168 +244,7 @@ namespace MiBandNaramek.Controllers
                 intensityScale = new CartesianScale();
             }
         }
-        /*
-        private async Task<Chart> GenerateHeartRateChartAsync()
-        {
-            // Generovat Graf
-            Chart chart = new Chart();
 
-            chart.Type = Enums.ChartType.Line;
-
-            ChartJSCore.Models.Data data = new ChartJSCore.Models.Data();
-            data.Labels = new List<string>();
-
-            //    var result = hearRateData.GroupBy(groupBy => groupBy.DateTimeValue).Select(select => new SummaryHelper { DoubleValue = select.Average(s => s.DoubleValue), DateTimeValue = select.Key });
-
-            List<double?> hearRateDataForGraph = new List<double?>();
-            List<double?> StepsDataForGraph = new List<double?>();
-            List<double?> IntesityDataForGraph = new List<double?>();
-            double stepsTotal = 0;
-            foreach (var hearRate in this.LoadMeasuredData(TimestampStart, TimestampEnd))
-            {
-                if (hearRate.DoubleValue >= 0 && hearRate.DoubleValue <= 255)
-                {
-                    data.Labels.Add(hearRate.DateTimeValue.ToString());
-                    hearRateDataForGraph.Add(hearRate.DoubleValue);
-                    stepsTotal += Convert.ToDouble(hearRate.Steps);
-                    StepsDataForGraph.Add(stepsTotal);
-                    IntesityDataForGraph.Add(hearRate.Intensity);
-                }
-            }
-
-
-            // Vytvoření datasets
-            LineDataset dataset = new LineDataset()
-            {
-                Label = "Heart Data",
-                Data = hearRateDataForGraph,
-                Fill = "false",
-                LineTension = 0,
-                BackgroundColor = ChartColor.FromRgba(75, 192, 192, 0.4),
-                BorderColor = ChartColor.FromRgb(75, 192, 192),
-                BorderCapStyle = "butt",
-                BorderDash = new List<int> { },
-                BorderDashOffset = 0.0,
-                BorderJoinStyle = "miter",
-                BorderWidth = 1,
-                PointBorderColor = new List<ChartColor> { ChartColor.FromRgb(75, 192, 192) },
-                PointBackgroundColor = new List<ChartColor> { ChartColor.FromHexString("#ffffff") },
-                PointBorderWidth = new List<int> {  },
-                PointHoverRadius = new List<int> {  },
-                PointHoverBackgroundColor = new List<ChartColor> { ChartColor.FromRgb(75, 192, 192) },
-                PointHoverBorderColor = new List<ChartColor> { ChartColor.FromRgb(220, 220, 220) },
-                PointHoverBorderWidth = new List<int> {  },
-                PointRadius = new List<int> {  },
-                PointHitRadius = new List<int> {  },
-                
-            };
-
-            LineDataset dataset2 = new LineDataset()
-            {
-                Label = "Heart Data",
-                Data = StepsDataForGraph,
-                Fill = "false",
-                LineTension = 0,
-                BackgroundColor = ChartColor.FromRgba(175, 80, 140, 0.4),
-                BorderColor = ChartColor.FromRgb(175, 80, 140),
-                BorderCapStyle = "butt",
-                BorderDash = new List<int> { },
-                BorderDashOffset = 0.0,
-                BorderJoinStyle = "miter",
-                BorderWidth = 1,
-                PointBorderColor = new List<ChartColor> { ChartColor.FromRgb(175, 80, 140) },
-                PointBackgroundColor = new List<ChartColor> { ChartColor.FromHexString("#ffffff") },
-                PointBorderWidth = new List<int> { },
-                PointHoverRadius = new List<int> { },
-                PointHoverBackgroundColor = new List<ChartColor> { ChartColor.FromRgb(175, 80, 140) },
-                PointHoverBorderColor = new List<ChartColor> { ChartColor.FromRgb(220, 220, 220) },
-                PointHoverBorderWidth = new List<int> { },
-                PointRadius = new List<int> { },
-                PointHitRadius = new List<int> { },
-                YAxisID = "xxx-1",
-
-            };
-
-            LineDataset dataset3 = new LineDataset()
-            {
-                Label = "Heart Data",
-                Data = IntesityDataForGraph,
-                Fill = "false",
-                LineTension = 0,
-                BackgroundColor = ChartColor.FromRgba(10, 80, 140, 0.4),
-                BorderColor = ChartColor.FromRgb(10, 80, 140),
-                BorderCapStyle = "butt",
-                BorderDash = new List<int> { },
-                BorderDashOffset = 0.0,
-                BorderJoinStyle = "miter",
-                BorderWidth = 1,
-                PointBorderColor = new List<ChartColor> { ChartColor.FromRgb(10, 80, 140) },
-                PointBackgroundColor = new List<ChartColor> { ChartColor.FromHexString("#ffffff") },
-                PointBorderWidth = new List<int> { },
-                PointHoverRadius = new List<int> { },
-                PointHoverBackgroundColor = new List<ChartColor> { ChartColor.FromRgb(10, 80, 140) },
-                PointHoverBorderColor = new List<ChartColor> { ChartColor.FromRgb(220, 220, 220) },
-                PointHoverBorderWidth = new List<int> { },
-                PointRadius = new List<int> { },
-                PointHitRadius = new List<int> { },
-                YAxisID = "xxx-2",
-
-            };
-
-            data.Datasets = new List<Dataset>();
-            data.Datasets.Add(dataset);
-            data.Datasets.Add(dataset2);
-            data.Datasets.Add(dataset3);
-
-            chart.Data = data;
-
-            // Vytvoření separátních YAXES pro graf
-
-            // První Osa
-            CartesianScale heartRateScale = new CartesianScale()
-            {
-                Id = "xxx-1",
-                Type = "linear",
-                Position = "right",
-                Stacked = true,
-                ScaleLabel = new ScaleLabel() { Display = true },
-                Ticks = new CartesianLinearTick()
-                {
-                    Max = 500,
-                    Display = true,
-                    BeginAtZero = true,
-                    FontSize = 50,
-                    Padding = 10,
-                    Callback = "function (tick, index, ticks) { return numeral(tick).format('$ 0,0');}"
-                }
-            };
-
-            CartesianScale IntensityScale = new CartesianScale()
-            {
-                Id = "xxx-2",
-                Type = "linear",
-                Position = "right",
-                Stacked = true,
-                ScaleLabel = new ScaleLabel() { Display = true },
-                Ticks = new CartesianLinearTick()
-                {
-                    Max = 200,
-                    Display = true,
-                    BeginAtZero = true,
-                    Min = 0,
-                    FontSize = 50,
-                    Padding = 10,
-                    Callback = "function (tick, index, ticks) { return numeral(tick).format('$ 0,0');}"
-                }
-            };
-
-            chart.Options.Scales = new Scales { YAxes = new List<Scale>() };
-            chart.Options.Scales.YAxes.Add(heartRateScale);
-            chart.Options.Scales.YAxes.Add(IntensityScale);
-
-            return chart;
-        }
-        */
         // Funkce pro načtení RAW dat ve vybraném období
         private void LoadSummaryHelperData()
         {
@@ -412,7 +260,7 @@ namespace MiBandNaramek.Controllers
         {
             // Zjistím si, jak musím data na grafu rozčlenit
             // Defaultní rozdělení - Plná šířka grafu = 12h v minutách = 720 hodnot
-            int timeMergreLimit = Convert.ToInt32((double)((startDateTime - endDateTime).TotalSeconds / (12 * 60 * 60)));
+            int timeMergreLimit = Convert.ToInt32((double)((startDateTime - endDateTime).TotalSeconds / (4 * 60 * 60)));
 
 
             if (timeMergreLimit > 1)

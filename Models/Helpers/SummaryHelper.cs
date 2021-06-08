@@ -20,6 +20,7 @@ namespace MiBandNaramek.Models.Helpers
         public string Do { get; set; }
         public List<ActivityData> Activity { get; set; }
         public List<SummaryHeartRate> SummaryHeartRate { get; set; }
+        public string UserId { get; set; }
     }
 
     public class SummaryHeartRate

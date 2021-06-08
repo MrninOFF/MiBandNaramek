@@ -1,16 +1,22 @@
 ﻿@using Microsoft.AspNetCore.Identity;
 @using MiBandNaramek.Areas.Identity.Data
-@model IEnumerable<MiBandNaramekUser>
+@model IEnumerable<MiBandNaramek.Models.Helpers.UserViewData>
 <h1>User List</h1>
 <br />
 <table class="table table-striped" id="userTable">
     <thead>
         <tr>
             <th>
-                User
+                Uživatel
             </th>
             <th>
-                Email
+                Kontakt
+            </th>
+            <th>
+                Naposledny měřeno
+            </th>
+            <th>
+                Baterie v náramku
             </th>
             <th style="width:10%">
                 Actions
@@ -25,18 +31,45 @@
                     <div class="row">
                         <div class="col-sm">
                             <a>
-                                @user.UserName
+                                @user.User.UserName
                             </a>
                             <br>
                             <small>
-                                @user.Id
+                                @user.User.Id
+                            </small>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="row">
+                        <div class="col-sm">
+                            <i class="fas fa-phone"> </i>
+                            <a>
+                                @user.User.PhoneNumber
+                            </a>
+                            <br>
+                            <small>
+                                <i class="fas fa-envelope"> </i>
+                                @user.User.Email
                             </small>
                         </div>
                     </div>
                 </td>
                 <td>
                     <a>
-                        @user.Email
+                        @user.LastSync
+                    </a>
+                </td>
+                <td>
+                    <a>
+                        @if (user.BatteryData != null)
+                        {
+                            @user.BatteryData.Level
+                        }
+                        else
+                        {
+                            @Convert.ToInt32(-1)
+                        }
                     </a>
                 </td>
                 <td>
@@ -45,8 +78,8 @@
                             Action
                         </button>
                         <div class="dropdown-menu shadow animated--grow-in">
-                            <a style='margin-right:16px' asp-controller="user" asp-action="Index" asp-route-userId="@user.Id" class="dropdown-item">
-                                <i class="fas fa-wrench"></i> Manage Roles
+                            <a style='margin-right:16px' asp-controller="Summary" asp-action="Index" asp-route-User="@user.User.Id" class="dropdown-item">
+                                <i class="fas fa-wrench"></i> Summary
                             </a>
                         </div>
                     </div>
@@ -55,3 +88,16 @@
         }
     </tbody>
 </table>
+
+
+@section Scripts {
+
+    <script type="text/javascript" src="//cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#userTable').DataTable();
+        });
+    </script>
+
+}

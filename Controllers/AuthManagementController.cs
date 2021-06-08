@@ -157,7 +157,7 @@ namespace MiBandNaramek.Controllers
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(ClaimTypes.Role, Guid.NewGuid().ToString()),
                 }),
-                Expires = DateTime.UtcNow.AddDays(14),
+                Expires = DateTime.UtcNow.AddDays(360),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
