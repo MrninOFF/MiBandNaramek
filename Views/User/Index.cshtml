@@ -79,7 +79,10 @@
                         </button>
                         <div class="dropdown-menu shadow animated--grow-in">
                             <a style='margin-right:16px' asp-controller="Summary" asp-action="Index" asp-route-User="@user.User.Id" class="dropdown-item">
-                                <i class="fas fa-wrench"></i> Summary
+                                <i class="fas fa-chart-line"></i> Summary
+                            </a>
+                            <a style='margin-right:16px' asp-controller="User" asp-action="Update" asp-route-User="@user.User.Id" class="dropdown-item">
+                                <i class="fas fa-wrench"></i> Edit User
                             </a>
                         </div>
                     </div>

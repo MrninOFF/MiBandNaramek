@@ -18,6 +18,8 @@ namespace MiBandNaramek.Data
         public virtual DbSet<ActivityData> ActivityData { get; set; }
         public virtual DbSet<RequestData> RequestData { get; set; }
 
+        public virtual DbSet<SummaryNote> SummaryNote { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
 
@@ -41,6 +43,12 @@ namespace MiBandNaramek.Data
             builder.Entity<ActivityData>()
                     .HasIndex(e => new { e.UserId, e.TimestampStart }).IsUnique();
 
+            builder.Entity<SummaryNote>()
+                    .HasIndex(e => new { e.UserId, e.Date }).IsUnique();
+
+            // User data
+            builder.Entity<MiBandNaramekUser>().Property(e => e.Height).HasPrecision(38, 18);
+            builder.Entity<MiBandNaramekUser>().Property(e => e.Wight).HasPrecision(38, 18);
 
         }
 

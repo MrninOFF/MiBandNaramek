@@ -4,10 +4,32 @@
 @using System.Text.Json
 @model MiBandNaramek.Models.Helpers.SummaryViewData;
 
-<div class="h-75">
-    <label>Vyberte období   :</label>
-    <input class="form-control form-control-lg" width=40 type="text" name="datetimes" />
+<div class="row">
+    <div class="col-sm h-50">
+        <h1>Pacient :</h1>
+        <h2>@Model.User.UserName</h2>
+        <div class="row col-sm h-25 align-content-center">
+            <label>Váha : &nbsp;</label>
+            <label>@Model.User.Wight kg</label>
+        </div>
+        <div class="row col-sm h-25 align-content-center">
+            <label>Výška : &nbsp;</label>
+            <label>@Model.User.Height cm</label>
+        </div>
+        <div class="row col-sm h-25 align-content-center">
+            <label>Telefon : &nbsp;</label>
+            <label>@Model.User.PhoneNumber</label>
+        </div>
+    </div>
+    <div class=" col-md h-50">
+        <h1>Vyberte období :</h1>
+        <input class="form-control form-control-lg" width=40 type="text" name="datetimes" />
+    </div>
 </div>
+<div class="mt-md-3 mb-md-3">
+    <canvas id="SummaryChart"></canvas>
+</div>
+<!--
 <div>
     <div class="w-50">
         <table class="table table-striped" id="userTable">
@@ -48,16 +70,34 @@
             </tbody>
         </table>
     </div>
+    -->
+<div width="800">
+    @foreach (var dailyChart in Model.DailyCharts)
+    {
+        <div class="shadow p-3 mb-5 bg-white rounded">
+        <div>
+            <h1>@dailyChart.Name</h1>
+            <canvas id=@dailyChart.VariableName></canvas>
+        </div>
+        <div>
 
-    <div width="800">
-        @foreach (var dailyChart in Model.Charts)
-        {
-            <div>
-                <h1>@dailyChart.Name</h1>
-                <canvas id=@dailyChart.VariableName></canvas>
+            <!-- <div id="updateDiv">-->
+            <!-- ajax content will load here -->
+            <!-- you can put the form inside this div -->
+            <!-- so after submit the result will replace the form controls -->
+            <!-- </div>-->
+            <form asp-area="" asp-controller="Summary" asp-action="UpdateUserNote" asp-route-userId="@Model.UserId" asp-route-date="@dailyChart.Date" class="d-inline" data-ajax-loading="#loading" data-ajax-mode="replace" data-ajax-update="#updateDiv" data-ajax-success="Success" data-ajax-failure="Failure" data-ajax="true">
+                <h3>Poznámka:</h3>
+                <textarea type="text" name="note" asp-for="@dailyChart.Note" rows="3" class="form-control m-1"></textarea>
+                <button type="submit" id="save" class="btn bg-primary m-1">
+                    <i class="fa fa-check"></i>
+                    Uložit
+                </button>
+            </form>
+        </div>
             </div>
-         }
-    </div>
+    }
+</div>
 
 </div>
 
@@ -67,7 +107,13 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 
-    @foreach (var dailyChart in Model.Charts)
+
+
+    <script type="text/javascript">
+           @Html.Raw(Model.SummaryChart.CreateChartCode("SummaryChart"));
+    </script>
+
+    @foreach (var dailyChart in Model.DailyCharts)
     {
         <script type="text/javascript">
            @Html.Raw(dailyChart.Chart.CreateChartCode(dailyChart.VariableName));
@@ -89,10 +135,44 @@
             }
             },
               function (start, end, label) {
-                  window.location.href = '@Url.Action("ChangeDate", "Summary")' + '?Od=' + start.format('DD/MM/YYYY HH:mm:00A') + '&Do=' + end.format('DD/MM/YYYY HH:mm:00A');
-                  });
+                  window.location.href = '@Url.Action("ChangeDate", "Summary")' + '?Od=' + start.format('DD/MM/YYYY HH:mm:00A') + '&Do=' + end.format('DD/MM/YYYY HH:mm:00A') + '&User=' + @Html.Raw(Json.Serialize(Model.UserId));
+                });
         });
+
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery-ajax-unobtrusive@3.2.6/dist/jquery.unobtrusive-ajax.min.js"></script>
+
+    <script>
+        Success = function (varible) {
+            const notyf = new Notyf({
+                position: {
+                    x: 'center',
+                    y: 'top',
+                }});
+            notyf.success({
+                duration : 4000,
+                message: varible,
+                dismissible: true,
+                y: 'top'
+            });
+        };
+        Failure = function () {
+            const notyf = new Notyf({
+                position: {
+                    x: 'center',
+                    y: 'top',
+                }
+            });
+            notyf.error({
+                duration: 4000,
+                message: varible,
+                dismissible: true,
+                y: 'top'
+            });
+        };
+    </script>
+
 }
 
 @{

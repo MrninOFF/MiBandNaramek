@@ -1,4 +1,5 @@
-﻿using MiBandNaramek.Areas.Identity.Data;
+﻿using AspNetCoreHero.ToastNotification.Abstractions;
+using MiBandNaramek.Areas.Identity.Data;
 using MiBandNaramek.Data;
 using MiBandNaramek.Models;
 using MiBandNaramek.Models.Helpers;
@@ -15,12 +16,14 @@ namespace MiBandNaramek.Controllers
     {
         private readonly ApplicationDbContext _applicationDbContext;
         private readonly UserManager<MiBandNaramekUser> _userManager;
+        private readonly INotyfService _notyfService;
 
 
-        public UserController(ApplicationDbContext applicationDbContext, UserManager<MiBandNaramekUser> userManager)
+        public UserController(ApplicationDbContext applicationDbContext, UserManager<MiBandNaramekUser> userManager, INotyfService notyfService)
         {
             _userManager = userManager;
             _applicationDbContext = applicationDbContext;
+            _notyfService = notyfService;
         }
 
         public async Task<IActionResult> Index()
@@ -38,6 +41,32 @@ namespace MiBandNaramek.Controllers
                                                                                                                               .FirstOrDefault().ToString()})
                                             .ToList();
             return View(allUsersExceptCurrentUser);
+        }
+
+        public async Task<IActionResult> Update(string User)
+        {
+            return View(await _userManager.FindByIdAsync(User));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateUser(string userId, MiBandNaramekUser model)
+        {
+            if (ModelState.IsValid)
+            {
+                var myUser = _userManager.FindByIdAsync(userId).Result;
+
+                myUser.Height = model.Height;
+                myUser.Wight = model.Wight;
+                myUser.PhoneNumber = model.PhoneNumber;
+
+                await _userManager.UpdateAsync(myUser);
+
+                _notyfService.Success($"Uživatel {myUser.UserName} upraven");
+
+                return RedirectToAction("Index");
+            }
+            model.Id = userId;
+            return View("Update", model);
         }
     }
 }

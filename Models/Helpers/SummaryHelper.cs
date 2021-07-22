@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MiBandNaramek.Areas.Identity.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,12 +16,14 @@ namespace MiBandNaramek.Models.Helpers
 
     public class SummaryViewData
     {
-        public List<DailyChartData> Charts { get; set; }
+        public ChartJSCore.Models.Chart SummaryChart { get; set; }
+        public List<DailyChartData> DailyCharts { get; set; }
         public string Od { get; set; }
         public string Do { get; set; }
         public List<ActivityData> Activity { get; set; }
         public List<SummaryHeartRate> SummaryHeartRate { get; set; }
         public string UserId { get; set; }
+        public MiBandNaramekUser User { get; set; }
     }
 
     public class SummaryHeartRate
@@ -34,6 +37,9 @@ namespace MiBandNaramek.Models.Helpers
         public string Name { get; set; }
         public string VariableName { get; set; }
         public ChartJSCore.Models.Chart Chart { get; set; }
+        public ChartJSCore.Models.Chart PieChart { get; set; }
+        public string Note { get; set; }
+        public DateTime Date { get; set; }
     }
 
 }

@@ -22,6 +22,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AspNetCoreHero.ToastNotification;
 
 namespace MiBandNaramek
 {
@@ -37,6 +38,15 @@ namespace MiBandNaramek
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddNotyf(config =>
+            {
+                config.DurationInSeconds = 5;
+                config.IsDismissable = true;
+                config.Position = NotyfPosition.TopCenter;
+            });
+
+            services.AddToastify(config => { config.DurationInSeconds = 500; config.Position = Position.Right; config.Gravity = Gravity.Bottom; });
+
 
             var server = Configuration["DBServer"] ?? "192.168.88.251";
             var port = Configuration["DBPort"] ?? "3306";
@@ -118,7 +128,7 @@ namespace MiBandNaramek
             {
                 // Cookie settings.
                 options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
 
                 options.LoginPath = "/Identity/Account/Login";
                 options.AccessDeniedPath = "/Identity/Account/AccessDenied";

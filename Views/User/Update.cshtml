@@ -1,0 +1,60 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using MiBandNaramek.Areas.Identity.Data
+@model MiBandNaramek.Areas.Identity.Data.MiBandNaramekUser
+
+
+<form asp-controller="User" method="post" asp-action="updateUser" asp-route-userId="@Model.Id" class="d-inline">
+    <div class="form-group row">
+        <label for="user_id" class="col-4 col-form-label">ID</label>
+        <div class="col-8">
+            <input type="text" class="form-control" asp-for="@Model.Id" disabled="disabled">
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="@Model.Email" class="col-4 col-form-label"></label>
+        <div class="col-8">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">
+                        <i class="fa fa-address-card"></i>
+                    </div>
+                </div>
+                <input type="text" class="form-control" asp-for="@Model.Email" >
+            </div>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="@Model.PhoneNumber" class="col-4 col-form-label"></label>
+        <div class="col-8">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">
+                        <i class="fa fa-phone"></i>
+                    </div>
+                </div>
+                <input type="text" class="form-control" asp-for="@Model.PhoneNumber">
+                <span asp-validation-for="@Model.PhoneNumber" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="@Model.Wight" class="col-4 col-form-label"></label>
+        <div class="col-8">
+            <input type="text" class="form-control" asp-for="@Model.Wight">
+            <span asp-validation-for="@Model.Wight" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="@Model.Height" class="col-4 col-form-label"></label>
+        <div class="col-8">
+            <input type="text" class="form-control" asp-for="@Model.Height">
+            <span asp-validation-for="@Model.Height" class="text-danger"></span>
+        </div>
+    </div>
+    <button type="submit" id="save" class="btn bg-primary">
+        <i class="fa fa-check"></i>
+        Uložit
+    </button>
+</form>
+
+

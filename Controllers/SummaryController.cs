@@ -14,6 +14,8 @@ using System.Text.Json;
 using System.Globalization;
 using MiBandNaramek.Models;
 using MiBandNaramek.Services;
+using System.Security.Claims;
+using AspNetCoreHero.ToastNotification.Abstractions;
 
 namespace MiBandNaramek.Controllers
 {
@@ -23,6 +25,8 @@ namespace MiBandNaramek.Controllers
 
         private readonly ApplicationDbContext _applicationDbContext;
         private readonly UserManager<MiBandNaramekUser> _userManager;
+        private readonly INotyfService _notyfService;
+        private readonly IToastifyService _notifyService;
 
         // Časy pro načtení dat
         private DateTime DateTimeStart;
@@ -34,17 +38,20 @@ namespace MiBandNaramek.Controllers
         // Přihlášený uživatel
         private string UserId;
 
-        public SummaryController(ApplicationDbContext applicationDbContext, UserManager<MiBandNaramekUser> userManager)
+        public SummaryController(ApplicationDbContext applicationDbContext, UserManager<MiBandNaramekUser> userManager, INotyfService notyfService, IToastifyService notifyService)
         {
             _userManager = userManager;
             _applicationDbContext = applicationDbContext;
+            _notyfService = notyfService;
+            _notifyService = notifyService;
         }
 
         public IActionResult Index(string User)
         {
             // Nastavím defaultní časy
 
-            UserId = User;
+            if (String.IsNullOrEmpty(UserId))
+                UserId = User;
 
             DateTimeStart = DateTime.Now.Date.AddDays(-3).AddHours(6);
             DateTimeEnd = DateTime.Now.Date.AddHours(6);
@@ -52,13 +59,15 @@ namespace MiBandNaramek.Controllers
             this.LoadSummaryHelperData();
 
             return View(new SummaryViewData() {
+                User = _userManager.FindByIdAsync(UserId).Result,
                 SummaryHeartRate = LoadSummaryHeartRate(DateTimeStart, DateTimeEnd),
-                Charts = LoadSummaryDailyCharts(DateTimeStart, DateTimeEnd),
+                SummaryChart = LoadSummaryChart(DateTimeStart, DateTimeEnd),
+                DailyCharts = LoadSummaryDailyCharts(DateTimeStart, DateTimeEnd),
                 Activity = LoadActivityData(DateTimeStart, DateTimeEnd),
                 Do = DateTimeEnd.ToString("dd/MM/yyyy 06:00 AM", CultureInfo.InvariantCulture),
                 Od = DateTimeStart.ToString("dd/MM/yyyy 06:00 AM", CultureInfo.InvariantCulture),
                 UserId = UserId
-            }); 
+            });
         }
 
         [HttpGet]
@@ -74,23 +83,55 @@ namespace MiBandNaramek.Controllers
             //
             //  K poslednímu datu musím přidat den
 
-            UserId = User;
+            if (String.IsNullOrEmpty(UserId))
+                UserId = User;
 
             DateTimeStart = DateTime.Parse(Od);
             DateTimeEnd = DateTime.Parse(Do).AddDays(1);
 
             this.LoadSummaryHelperData();
 
+            // _notifyService.Success($"Načteno");
+
             return View("Index", new SummaryViewData() {
+                User = _userManager.FindByIdAsync(UserId).Result,
                 SummaryHeartRate = LoadSummaryHeartRate(DateTimeStart, DateTimeEnd),
-                Charts = LoadSummaryDailyCharts(DateTimeStart, DateTimeEnd),
+                SummaryChart = LoadSummaryChart(DateTimeStart, DateTimeEnd),
+                DailyCharts = LoadSummaryDailyCharts(DateTimeStart, DateTimeEnd),
                 Activity = LoadActivityData(DateTimeStart, DateTimeEnd),
                 Do = DateTimeEnd.ToString("dd/MM/yyyy hh:mm tt", CultureInfo.InvariantCulture),
                 Od = DateTimeStart.ToString("dd/MM/yyyy hh:mm tt", CultureInfo.InvariantCulture),
                 UserId = UserId
             });
         }
-        
+
+        [HttpPost]
+        public async Task<ContentResult> UpdateUserNote(string note, string userId, string date)
+        {
+            // Ten kdo právě upravuje
+            var doctor = await _userManager.FindByNameAsync(User.Identity.Name);
+            var user = await _userManager.FindByIdAsync(userId);
+            DateTime dateTime = DateTime.Parse(date);
+
+            SummaryNote summaryNote = new SummaryNote(){
+                Id = _applicationDbContext.SummaryNote.Where(where => where.UserId == user.Id && where.Date == dateTime.Date).Select(select => select.Id).FirstOrDefault(),
+                Date = dateTime.Date,
+                DoctorId = doctor.Id,
+                UserId = user.Id,
+                Note = note,
+                UpdateDate = DateTime.Now
+            };
+
+            _ = _applicationDbContext.SummaryNote.Update(summaryNote);
+            _ = _applicationDbContext.SaveChanges();
+
+            // _notifyService.Success($"Poznámka k měření {date} uložena");
+
+            // return Content("<h1>Super</h1>");
+            return Content($"Poznámka k {dateTime.ToString("dd.MM.yyyy")} uložena");
+            //return View("Index", model);
+        }
+
         /// <summary>
         /// Funkce slouží pro vytvoření denních grafů a tabulek
         /// </summary>
@@ -107,15 +148,89 @@ namespace MiBandNaramek.Controllers
 
             for (DateTime selectedDate = startDateTime; selectedDate < endDateTime; selectedDate = selectedDate.AddDays(1))
             {
+                // Velký spojnicový graf
                 Charts.Add(new DailyChartData()
                 {
                     Chart = GenerateMainDailyChart(selectedDate, selectedDate.AddDays(1)),
+                    PieChart = GeneratePieDailyChart(selectedDate, selectedDate.AddDays(1)),
                     Name = selectedDate.ToString("dd.MM.yyyy"),
-                    VariableName = "DEN" + selectedDate.ToString("ddMMyyyy") + "GRAF"
-                });
+                    VariableName = "DEN" + selectedDate.ToString("ddMMyyyy") + "GRAF",
+                    Date = selectedDate.Date,
+                    Note = _applicationDbContext.SummaryNote.Where(where => where.UserId == UserId && where.Date == selectedDate.Date).Select(select => select.Note).FirstOrDefault()
+                }) ;
+                // Koláčový graf aktivit
+
             }
 
             return Charts;
+        }
+
+        private Chart LoadSummaryChart(DateTime startDateTime, DateTime endDateTime)
+        {
+            Chart chart = new Chart();
+
+            chart.Type = Enums.ChartType.Bar;
+
+            chart.Data = new ChartJSCore.Models.Data();
+
+            List<double?> lowHeartRate = new List<double?>();
+            List<double?> mediumHeartRate = new List<double?>();
+            List<double?> highHeartRate = new List<double?>();
+            List<double?> steps = new List<double?>();
+
+            List<string> labels = new List<string>();
+
+            List<SummaryHelper> Summary = this.LoadMeasuredData(startDateTime, endDateTime, 1);
+
+            for (DateTime selectedDate = startDateTime; selectedDate < endDateTime; selectedDate = selectedDate.AddDays(1))
+            {
+                labels.Add(selectedDate.ToString("dd.MM.yyyy"));
+
+                lowHeartRate.Add(Summary.Where(where => where.DoubleValue > 0 && where.DoubleValue < 255).Where(where => where.DateTimeValue >= selectedDate && selectedDate.AddDays(1) > where.DateTimeValue).Where(where => where.DoubleValue <= Constants.HeartRateConstants.MediumHeartRate).Select(select => select.DoubleValue).Count());
+                mediumHeartRate.Add(Summary.Where(where => where.DoubleValue > 0 && where.DoubleValue < 255).Where(where => where.DateTimeValue >= selectedDate && selectedDate.AddDays(1) > where.DateTimeValue).Where(where => where.DoubleValue > Constants.HeartRateConstants.MediumHeartRate && where.DoubleValue <= Constants.HeartRateConstants.HighHeartRate).Select(select => select.DoubleValue).Count());
+                highHeartRate.Add(Summary.Where(where => where.DoubleValue > 0 && where.DoubleValue < 255).Where(where => where.DateTimeValue >= selectedDate && selectedDate.AddDays(1) > where.DateTimeValue).Where(where => where.DoubleValue > Constants.HeartRateConstants.HighHeartRate).Select(select => select.DoubleValue).Count());
+                steps.Add(Summary.Where(where => where.DateTimeValue >= selectedDate && selectedDate.AddDays(1) > where.DateTimeValue).Sum(sum => sum.Steps));
+            }
+
+            chart.Data.Datasets = new List<Dataset>();
+            chart.Options.Scales = new Scales { YAxes = new List<Scale>() };
+
+            chart.Data.Labels = labels;
+
+            chart.Data.Datasets.Add(new BarDataset() { Data = lowHeartRate, Label = "Nízký tep", BackgroundColor= new List<ChartColor> { ChartColor.FromRgb(10, 10, 220) } });
+            chart.Data.Datasets.Add(new BarDataset() { Data = mediumHeartRate, Label = "Střední tep", BackgroundColor = new List<ChartColor> { ChartColor.FromRgb(10, 220, 10) } });
+            chart.Data.Datasets.Add(new BarDataset() { Data = highHeartRate, Label = "Vysoký tep", BackgroundColor = new List<ChartColor> { ChartColor.FromRgb(220, 10, 10) } });
+
+            chart.Data.Datasets.Add(new LineDataset() { Data = steps, Label = "Kroky", PointBackgroundColor = new List<ChartColor> { ChartColor.FromRgb(80, 10, 80) }, YAxisID="Kroky" });
+
+            CartesianScale intensityScale = new CartesianScale()
+            {
+                Id = "Kroky",
+                Type = "linear",
+                Position = "right",
+                Stacked = true,
+                ScaleLabel = new ScaleLabel() { Display = true },
+                Ticks = new CartesianLinearTick()
+                {
+                    Display = true,
+                    FontSize = 50,
+                    Padding = 10,
+                    Callback = "function (tick, index, ticks) { return numeral(tick).format('$ 0,0');}"
+                }
+            };
+
+            chart.Options.Scales.YAxes.Add(intensityScale);
+
+            return chart;
+        }
+
+        private Chart GeneratePieDailyChart(DateTime startDateTime, DateTime endDateTime)
+        {
+            Chart chart = new Chart();
+
+            chart.Type = Enums.ChartType.Pie;
+
+            return chart;
         }
 
         /// <summary>
@@ -178,11 +293,18 @@ namespace MiBandNaramek.Controllers
             stepsDataForGraph = new List<double?>();
             intesityDataForGraph = new List<double?>();
             double stepsTotal = 0;
-            foreach (var measure in this.LoadMeasuredData(startDateTime, endDateTime))
+            foreach (var measure in this.LoadMeasuredData(startDateTime, endDateTime, 4))
             {
                 // TODO Možnost upgradu
                 if (measure.DoubleValue >= 0 && measure.DoubleValue <= 255)
                 {
+                    // Odstranění 255 dat - Nahrazení normalní hodnotou
+                    if (measure.DoubleValue >= 255 || measure.DoubleValue < 1)
+                    {
+                        if (hearRateDataForGraph.Count > 0)
+                            measure.DoubleValue = hearRateDataForGraph.Last().Value;
+                    }
+
                     labels.Add(measure.DateTimeValue.ToString());
                     hearRateDataForGraph.Add(measure.DoubleValue);
                     stepsTotal += Convert.ToDouble(measure.Steps);
@@ -256,13 +378,13 @@ namespace MiBandNaramek.Controllers
                                         .ToList();
         }
 
-        private List<SummaryHelper> LoadMeasuredData (DateTime startDateTime, DateTime endDateTime)
+        private List<SummaryHelper> LoadMeasuredData (DateTime startDateTime, DateTime endDateTime, int groupBySeconds)
         {
             // Zjistím si, jak musím data na grafu rozčlenit
             // Defaultní rozdělení - Plná šířka grafu = 12h v minutách = 720 hodnot
             int timeMergreLimit = Convert.ToInt32((double)((startDateTime - endDateTime).TotalSeconds / (4 * 60 * 60)));
 
-
+            timeMergreLimit = groupBySeconds;
             if (timeMergreLimit > 1)
             {
                 // Pokud je limit více jak 1, pak potřebuji upravit načtené hodnoty
