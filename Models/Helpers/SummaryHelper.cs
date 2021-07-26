@@ -12,6 +12,7 @@ namespace MiBandNaramek.Models.Helpers
         public double DoubleValue { get; set; }
         public int Steps { get; set; }
         public double Intensity { get; set; }
+        public int Kind { get; set; }
     }
 
     public class SummaryViewData
@@ -23,6 +24,7 @@ namespace MiBandNaramek.Models.Helpers
         public List<ActivityData> Activity { get; set; }
         public List<SummaryHeartRate> SummaryHeartRate { get; set; }
         public string UserId { get; set; }
+        public int GroupByMin { get; set; }
         public MiBandNaramekUser User { get; set; }
     }
 
@@ -36,6 +38,7 @@ namespace MiBandNaramek.Models.Helpers
     {
         public string Name { get; set; }
         public string VariableName { get; set; }
+        public string VariablePieName { get; set; }
         public ChartJSCore.Models.Chart Chart { get; set; }
         public ChartJSCore.Models.Chart PieChart { get; set; }
         public string Note { get; set; }

@@ -1,4 +1,5 @@
-﻿using MiBandNaramek.Data;
+﻿using ChartJSCore.Helpers;
+using MiBandNaramek.Data;
 using MiBandNaramek.Models;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,35 @@ namespace MiBandNaramek.Services
             }
 
             return 0;
+        }
+
+        public static ChartColor GetChartColorByActivityKind(int AktivityKind)
+        {
+            if (AktivityKind < 50)
+                return ChartColor.FromRgb(
+                    Convert.ToByte(AktivityKind - (AktivityKind / 1)), 
+                    Convert.ToByte(AktivityKind - (AktivityKind / 10)), 
+                    Convert.ToByte(AktivityKind - (AktivityKind / 20)));
+            if (AktivityKind < 100)
+                return ChartColor.FromRgb(
+                    Convert.ToByte(AktivityKind - (AktivityKind / 10)), 
+                    Convert.ToByte(AktivityKind - (AktivityKind / 1)), 
+                    Convert.ToByte(AktivityKind - (AktivityKind / 20)));
+            if (AktivityKind < 150)
+                return ChartColor.FromRgb(
+                    Convert.ToByte(AktivityKind - (AktivityKind / 20)), 
+                    Convert.ToByte(AktivityKind - (AktivityKind / 1)), 
+                    Convert.ToByte(AktivityKind - (AktivityKind / 10)));
+            if (AktivityKind < 200)
+                return ChartColor.FromRgb(
+                    Convert.ToByte(AktivityKind - (AktivityKind / 1)),
+                    Convert.ToByte(AktivityKind - (AktivityKind / 20)), 
+                    Convert.ToByte(AktivityKind - (AktivityKind / 10)));
+            else
+                return ChartColor.FromRgb(
+                    Convert.ToByte(AktivityKind - (AktivityKind / 20)), 
+                    Convert.ToByte(AktivityKind - (AktivityKind / 10)), 
+                    Convert.ToByte(AktivityKind - (AktivityKind / 1)));
         }
     }
 }

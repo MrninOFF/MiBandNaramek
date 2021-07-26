@@ -21,9 +21,22 @@
             <label>@Model.User.PhoneNumber</label>
         </div>
     </div>
-    <div class=" col-md h-50">
-        <h1>Vyberte období :</h1>
-        <input class="form-control form-control-lg" width=40 type="text" name="datetimes" />
+    <div class=" col-md h-50 m-1">
+        <form asp-area="" asp-controller="Summary" asp-action="ChangeDate" asp-route-User="@Model.UserId">
+            <h1>Vyberte období :</h1>
+            <input class="form-control form-control-lg" width=40 type="text" name="datetimes" />
+            <input asp-for="@Model.Od" id="Model_Od" name="Od" type="hidden" />
+            <input asp-for="@Model.Do" id="Model_Do" name="Do" type="hidden" />
+            <input asp-for="@Model.UserId" type="hidden" />
+            <h3 id="minutes" class="mt-2"></h3>
+            <div class="col-md">
+                <input type="range" min="1" max="20" step="1" asp-for=@Model.GroupByMin class="form-range w-50 align-self-md-center" id="minuteRange">
+                <button type="submit" id="save" class="btn bg-primary ml-5">
+                    <i class="fas fa-frog"></i>
+                    Načíst
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 <div class="mt-md-3 mb-md-3">
@@ -75,26 +88,30 @@
     @foreach (var dailyChart in Model.DailyCharts)
     {
         <div class="shadow p-3 mb-5 bg-white rounded">
-        <div>
-            <h1>@dailyChart.Name</h1>
-            <canvas id=@dailyChart.VariableName></canvas>
-        </div>
-        <div>
-
-            <!-- <div id="updateDiv">-->
-            <!-- ajax content will load here -->
-            <!-- you can put the form inside this div -->
-            <!-- so after submit the result will replace the form controls -->
-            <!-- </div>-->
-            <form asp-area="" asp-controller="Summary" asp-action="UpdateUserNote" asp-route-userId="@Model.UserId" asp-route-date="@dailyChart.Date" class="d-inline" data-ajax-loading="#loading" data-ajax-mode="replace" data-ajax-update="#updateDiv" data-ajax-success="Success" data-ajax-failure="Failure" data-ajax="true">
-                <h3>Poznámka:</h3>
-                <textarea type="text" name="note" asp-for="@dailyChart.Note" rows="3" class="form-control m-1"></textarea>
-                <button type="submit" id="save" class="btn bg-primary m-1">
-                    <i class="fa fa-check"></i>
-                    Uložit
-                </button>
-            </form>
-        </div>
+            <div>
+                <h1>@dailyChart.Name</h1>
+                <canvas id=@dailyChart.VariableName></canvas>
+            </div>
+            <div class="row">
+                <div div class="col-sm h-50">
+                    <!-- <div id="updateDiv">-->
+                    <!-- ajax content will load here -->
+                    <!-- you can put the form inside this div -->
+                    <!-- so after submit the result will replace the form controls -->
+                    <!-- </div>-->
+                    <form asp-area="" asp-controller="Summary" asp-action="UpdateUserNote" asp-route-userId="@Model.UserId" asp-route-date="@dailyChart.Date" class="d-inline" data-ajax-loading="#loading" data-ajax-mode="replace" data-ajax-update="#updateDiv" data-ajax-success="Success" data-ajax-failure="Failure" data-ajax="true">
+                        <h3>Poznámka:</h3>
+                        <textarea type="text" name="note" asp-for="@dailyChart.Note" rows="3" class="form-control m-1"></textarea>
+                        <button type="submit" id="save" class="btn btn-outline-danger m-1">
+                            <i class="fas fa-notes-medical"></i>
+                            Uložit
+                        </button>
+                    </form>
+                </div>
+                    <div div class="col-sm h-50">
+                        <canvas id=@dailyChart.VariablePieName></canvas>
+                    </div>
+                </div>
             </div>
     }
 </div>
@@ -118,44 +135,83 @@
         <script type="text/javascript">
            @Html.Raw(dailyChart.Chart.CreateChartCode(dailyChart.VariableName));
         </script>
+        <script type="text/javascript">
+           @Html.Raw(dailyChart.PieChart.CreateChartCode(dailyChart.VariablePieName));
+        </script>
     }
 
     <script>
-
         $(function () {
             console.log(@Html.Raw(Json.Serialize(Model.Od)));
             console.log(@Html.Raw(Json.Serialize(Model.Do)));
-          $('input[name="datetimes"]').daterangepicker({
+            $('input[name="datetimes"]').daterangepicker({
+              showWeekNumbers: true,
+              autoApply: true,
+              timePicker24Hour: true,
               timePicker: true,
               opens: 'right',
               startDate: @Html.Raw(Json.Serialize(Model.Od)),
               endDate: @Html.Raw(Json.Serialize(Model.Do)),
             locale: {
-                format: 'DD/MM/YYYY hh:mm A'
+                format: 'DD/MM/YYYY HH:mm'
             }
             },
-              function (start, end, label) {
-                  window.location.href = '@Url.Action("ChangeDate", "Summary")' + '?Od=' + start.format('DD/MM/YYYY HH:mm:00A') + '&Do=' + end.format('DD/MM/YYYY HH:mm:00A') + '&User=' + @Html.Raw(Json.Serialize(Model.UserId));
+                function (start, end, label) {
+                    var Model_Od = document.getElementById("Model_Od");
+                    var Model_Do = document.getElementById("Model_Do");
+                    Model_Od.innerHTML = start.format('DD/MM/YYYY HH:mm');
+                    Model_Od.value = start.format('DD/MM/YYYY HH:mm');
+                    Model_Do.innerHTML = end.format('DD/MM/YYYY HH:mm');
+                    Model_Do.value = end.format('DD/MM/YYYY HH:mm');
+                   // window.location.href = '@Url.Action("ChangeDate", "Summary")' + '?Od=' + start.format('DD/MM/YYYY HH:mm') + '&Do=' + end.format('DD/MM/YYYY HH:mm') + '&User=' + @Html.Raw(Json.Serialize(Model.UserId)) + '&GroupBy=' + document.getElementById("minuteRange").value;
                 });
         });
 
     </script>
 
+    <script>
+        var slider = document.getElementById("minuteRange");
+        var output = document.getElementById("minutes");
+        output.innerHTML = 'Sjednocení po : ' + slider.value + ' min.';
+
+        slider.oninput = function () {
+            output.innerHTML = 'Sjednocení po : ' + this.value + ' min.';
+        }
+    </script>
+
+
     <script src="https://cdn.jsdelivr.net/npm/jquery-ajax-unobtrusive@3.2.6/dist/jquery.unobtrusive-ajax.min.js"></script>
 
     <script>
         Success = function (varible) {
-            const notyf = new Notyf({
-                position: {
-                    x: 'center',
-                    y: 'top',
-                }});
-            notyf.success({
-                duration : 4000,
-                message: varible,
-                dismissible: true,
-                y: 'top'
-            });
+            if (varible.success == false) {
+                const notyf = new Notyf({
+                    position: {
+                        x: 'center',
+                        y: 'top',
+                    }
+                });
+                notyf.error({
+                    duration: 4000,
+                    message: varible.responseText,
+                    dismissible: true,
+                    y: 'top'
+                });
+            }
+            else {
+                const notyf = new Notyf({
+                    position: {
+                        x: 'center',
+                        y: 'top',
+                    }
+                });
+                notyf.success({
+                    duration: 4000,
+                    message: varible,
+                    dismissible: true,
+                    y: 'top'
+                });
+            }
         };
         Failure = function () {
             const notyf = new Notyf({
