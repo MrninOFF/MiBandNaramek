@@ -421,7 +421,7 @@ namespace MiBandNaramek.Controllers
         {
             LoadedSummaryHelperData = new List<SummaryHelper>();
             LoadedSummaryHelperData = _applicationDbContext.MeasuredData
-                                        .Where(option => option.Date >= DateTimeStart && option.Date <= DateTimeEnd)
+                                        .Where(option => option.Date >= DateTimeStart && option.Date <= DateTimeEnd && option.UserId == UserId)
                                         .Select(select => new SummaryHelper { DoubleValue = Convert.ToDouble(select.HeartRate), DateTimeValue = select.Date, Steps = select.Steps, Intensity = Convert.ToDouble(select.Intensity), Kind = select.Kind })
                                         .OrderBy(orderBy => orderBy.DateTimeValue)
                                         .ToList();
@@ -467,7 +467,7 @@ namespace MiBandNaramek.Controllers
 
         private List<ActivityData> LoadActivityData (DateTime startDateTime, DateTime endDateTime)
         {
-            List<ActivityData> activityData = _applicationDbContext.ActivityData.Select(select => new ActivityData() { Id = select.Id, DateStart = select.DateStart, DateEnd = select.DateEnd, Steps = select.Steps, Kind = select.Kind }).ToList();
+            List<ActivityData> activityData = _applicationDbContext.ActivityData.Where(option => option.UserId == UserId).Select(select => new ActivityData() { Id = select.Id, DateStart = select.DateStart, DateEnd = select.DateEnd, Steps = select.Steps, Kind = select.Kind }).ToList();
             // activityData.ForEach(select => select.Steps = ActivityDataService.CountStepsForActivity(_applicationDbContext, select.Id, select.Steps));
             return activityData;
         }

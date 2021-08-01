@@ -1,17 +1,23 @@
 ﻿@using Microsoft.AspNetCore.Identity;
 @using MiBandNaramek.Areas.Identity.Data
-@model MiBandNaramek.Areas.Identity.Data.MiBandNaramekUser
+@model MiBandNaramek.Models.ViewModels.UserUpdateViewModel
 
 
-<form asp-controller="User" method="post" asp-action="updateUser" asp-route-userId="@Model.Id" class="d-inline">
+<form asp-controller="User" method="post" asp-action="updateUser" asp-route-userId="@Model.User.Id" class="d-inline">
     <div class="form-group row">
         <label for="user_id" class="col-4 col-form-label">ID</label>
         <div class="col-8">
-            <input type="text" class="form-control" asp-for="@Model.Id" disabled="disabled">
+            <input type="text" class="form-control" asp-for="@Model.User.Id" disabled="disabled">
         </div>
     </div>
     <div class="form-group row">
-        <label asp-for="@Model.Email" class="col-4 col-form-label"></label>
+        <label class="col-4 col-form-label">Role</label>
+        <div class="col-8">
+            <input type="text" class="form-control" value="@Model.UserSelectedRole" disabled="disabled">
+        </div>
+    </div>
+    <div class="form-group row">
+        <label asp-for="@Model.User.Email" class="col-4 col-form-label"></label>
         <div class="col-8">
             <div class="input-group">
                 <div class="input-group-prepend">
@@ -19,12 +25,12 @@
                         <i class="fa fa-address-card"></i>
                     </div>
                 </div>
-                <input type="text" class="form-control" asp-for="@Model.Email" >
+                <input type="text" class="form-control" asp-for="@Model.User.Email">
             </div>
         </div>
     </div>
     <div class="form-group row">
-        <label asp-for="@Model.PhoneNumber" class="col-4 col-form-label"></label>
+        <label asp-for="@Model.User.PhoneNumber" class="col-4 col-form-label"></label>
         <div class="col-8">
             <div class="input-group">
                 <div class="input-group-prepend">
@@ -32,23 +38,41 @@
                         <i class="fa fa-phone"></i>
                     </div>
                 </div>
-                <input type="text" class="form-control" asp-for="@Model.PhoneNumber">
-                <span asp-validation-for="@Model.PhoneNumber" class="text-danger"></span>
+                <input type="text" class="form-control" asp-for="@Model.User.PhoneNumber">
+                <span asp-validation-for="@Model.User.PhoneNumber" class="text-danger"></span>
             </div>
         </div>
     </div>
     <div class="form-group row">
-        <label asp-for="@Model.Wight" class="col-4 col-form-label"></label>
+        <label asp-for="@Model.User.Wight" class="col-4 col-form-label"></label>
         <div class="col-8">
-            <input type="text" class="form-control" asp-for="@Model.Wight">
-            <span asp-validation-for="@Model.Wight" class="text-danger"></span>
+            <input type="text" class="form-control" asp-for="@Model.User.Wight">
+            <span asp-validation-for="@Model.User.Wight" class="text-danger"></span>
         </div>
     </div>
     <div class="form-group row">
-        <label asp-for="@Model.Height" class="col-4 col-form-label"></label>
+        <label asp-for="@Model.User.Height" class="col-4 col-form-label"></label>
         <div class="col-8">
-            <input type="text" class="form-control" asp-for="@Model.Height">
-            <span asp-validation-for="@Model.Height" class="text-danger"></span>
+            <input type="text" class="form-control" asp-for="@Model.User.Height">
+            <span asp-validation-for="@Model.User.Height" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-4 col-form-label">Role: </label>
+        <div class="col-8">
+            <select class="form-control" asp-for="@Model.UserSelectedRole">
+                @foreach (var Option in Model.UserRoles)
+                {
+                    @if (Option.Name == Model.UserSelectedRole)
+                    {
+                        <option value="@Option.Id" selected="selected"> @Option.Name </option>
+                    }
+                    else
+                    {
+                        <option value="@Option.Id"> @Option.Name </option>
+                    }
+                }
+            </select>
         </div>
     </div>
     <button type="submit" id="save" class="btn bg-primary">

@@ -3,6 +3,7 @@ using MiBandNaramek.Areas.Identity.Data;
 using MiBandNaramek.Data;
 using MiBandNaramek.Models;
 using MiBandNaramek.Models.Helpers;
+using MiBandNaramek.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -16,14 +17,16 @@ namespace MiBandNaramek.Controllers
     {
         private readonly ApplicationDbContext _applicationDbContext;
         private readonly UserManager<MiBandNaramekUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly INotyfService _notyfService;
 
 
-        public UserController(ApplicationDbContext applicationDbContext, UserManager<MiBandNaramekUser> userManager, INotyfService notyfService)
+        public UserController(ApplicationDbContext applicationDbContext, UserManager<MiBandNaramekUser> userManager, RoleManager<IdentityRole> roleManager, INotyfService notyfService)
         {
             _userManager = userManager;
             _applicationDbContext = applicationDbContext;
             _notyfService = notyfService;
+            _roleManager = roleManager;
         }
 
         public async Task<IActionResult> Index()
@@ -45,27 +48,43 @@ namespace MiBandNaramek.Controllers
 
         public async Task<IActionResult> Update(string User)
         {
-            return View(await _userManager.FindByIdAsync(User));
+            var selectedUser = await _userManager.FindByIdAsync(User);
+            return View(new UserUpdateViewModel(){
+                User = selectedUser,
+                UserRoles = _roleManager.Roles.ToList(),
+                UserSelectedRole = (await _userManager.GetRolesAsync(selectedUser)).FirstOrDefault()
+            });
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateUser(string userId, MiBandNaramekUser model)
+        public async Task<IActionResult> UpdateUser(string userId, UserUpdateViewModel model)
         {
             if (ModelState.IsValid)
             {
                 var myUser = _userManager.FindByIdAsync(userId).Result;
 
-                myUser.Height = model.Height;
-                myUser.Wight = model.Wight;
-                myUser.PhoneNumber = model.PhoneNumber;
+                myUser.Height = model.User.Height;
+                myUser.Wight = model.User.Wight;
+                myUser.PhoneNumber = model.User.PhoneNumber;
 
                 await _userManager.UpdateAsync(myUser);
+
+                var currentRole = (await _userManager.GetRolesAsync(myUser)).FirstOrDefault();
+
+                if (currentRole != model.UserSelectedRole)
+                {
+                    if (currentRole != null)
+                        await _userManager.RemoveFromRoleAsync(myUser, currentRole);
+                    await _userManager.AddToRoleAsync(myUser, (await _roleManager.FindByIdAsync(model.UserSelectedRole)).Name);
+                }
 
                 _notyfService.Success($"Uživatel {myUser.UserName} upraven");
 
                 return RedirectToAction("Index");
             }
-            model.Id = userId;
+            model.User.Id = userId;
+            model.UserSelectedRole = (await _userManager.GetRolesAsync(model.User)).FirstOrDefault();
+            model.UserRoles = _roleManager.Roles.ToList();
             return View("Update", model);
         }
     }

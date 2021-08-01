@@ -1,4 +1,5 @@
 using MiBandNaramek.Areas.Identity.Data;
+using MiBandNaramek.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -26,8 +27,9 @@ namespace MiBandNaramek
                 {
                     var userManager = services.GetRequiredService<UserManager<MiBandNaramekUser>>();
                     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+                    var databaseService = services.GetRequiredService<ApplicationDbContext>();
                     await Seeds.DefaultRoles.SeedAsync(userManager, roleManager);
-                    await Seeds.DefaultUsers.SeedUserAsync(userManager, roleManager);
+                    await Seeds.DefaultUsers.SeedUserAsync(userManager, roleManager, databaseService);
                     await Seeds.DefaultUsers.SeedAdminAsync(userManager, roleManager);
                     logger.LogInformation("Finished Seeding Default Data");
                     logger.LogInformation("Application Starting");
