@@ -65,7 +65,7 @@ namespace MiBandNaramek.Constants
                 case 0x79:
                     return "SLP MOVE 9";
                 case 0x5a:
-                    return "SIT MOVE a";
+                    return "SLOW RUN";
                 case 0x59:
                     return "SIT MOVE 9";
                 case 0x10:
@@ -75,11 +75,14 @@ namespace MiBandNaramek.Constants
                 case 0x60:
                     return "STAND";
                 case 0x70:
+                case 240:
                     return "SLEEP";
                 case 0x1a:
                     return "BACK TO BED";
                 case 0x6a:
                     return "STAND ACT.";
+                case 243:
+                    return "NÁRAMEK NENOŠEN";
                 default:
                     return $"Neznámá aktivita id {Id}";
             }

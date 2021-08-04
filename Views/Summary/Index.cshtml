@@ -2,7 +2,7 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @using System.Text.Json
-@model MiBandNaramek.Models.Helpers.SummaryViewData;
+@model MiBandNaramek.Models.Helpers.SummaryViewModel;
 
 <div class="row">
     <div class="col-sm h-50">
@@ -28,72 +28,92 @@
             <input asp-for="@Model.Od" id="Model_Od" name="Od" type="hidden" />
             <input asp-for="@Model.Do" id="Model_Do" name="Do" type="hidden" />
             <input asp-for="@Model.UserId" type="hidden" />
-            <h3 id="minutes" class="mt-2"></h3>
+            <h3 id="minutes" class="mt-2">Sjednocení po :</h3>
             <div class="col-md">
                 <input type="range" min="1" max="20" step="1" asp-for=@Model.GroupByMin class="form-range w-50 align-self-md-center" id="minuteRange">
-                <button type="submit" id="save" class="btn bg-primary ml-5">
+                <button type="submit" id="save" class="btn btn-outline-primary ml-5">
                     <i class="fas fa-frog"></i>
                     Načíst
                 </button>
             </div>
         </form>
+        <div class="btn-group m-1">
+            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Export dat
+            </button>
+            <div class="dropdown-menu shadow animated--grow-in">
+                <a style='margin-right:16px' asp-controller="Export" asp-action="ExportUserMeasuredDataToExcel" asp-route-UserId="@Model.UserId" asp-route-TextOd="@Model.Od.ToString()" asp-route-TextDo="@Model.Do.ToString()" class="dropdown-item">
+                    <i class="fas fa-file-excel"></i> Do Excelu
+                </a>
+                <a style='margin-right:16px' asp-controller="User" asp-action="Update" asp-route-User="@Model.UserId" class="dropdown-item">
+                    <i class="fas fa-align-justify"></i> Do JSON
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 <div class="mt-md-3 mb-md-3">
     <canvas id="SummaryChart"></canvas>
 </div>
 <!--
-<div>
-    <div class="w-50">
-        <table class="table table-striped" id="userTable">
-            <thead>
-                <tr>
-                    <th>
-                        Od
-                    </th>
-                    <th>
-                        Do
-                    </th>
-                    <th>
-                        Počet kroků
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var activity in Model.Activity)
-                {
-                    <tr>
-                        <td>
-                            <a>
-                                @activity.DateStart
-                            </a>
-                        </td>
-                        <td>
-                            <a>
-                                @activity.DateEnd
-                            </a>
-                        </td>
-                        <td>
-                            <a>
-                                @activity.Steps
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
     -->
 <div width="800">
     @foreach (var dailyChart in Model.DailyCharts)
     {
-        <div class="shadow p-3 mb-5 bg-white rounded">
-            <div>
-                <h1>@dailyChart.Name</h1>
-                <canvas id=@dailyChart.VariableName></canvas>
-            </div>
-            <div class="row">
-                <div div class="col-sm h-50">
+    <div class="shadow p-3 mb-5 bg-white rounded">
+        <div>
+            <h1>@dailyChart.Name</h1>
+            <canvas id=@dailyChart.VariableName></canvas>
+        </div>
+        <div class="row pt-3">
+                <div class="col-sm h-50">
+                    <div class="col-sm w-40">
+                        <table class="table table-striped" id="userTable">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Aktivita
+                                    </th>
+                                    <th>
+                                        Od
+                                    </th>
+                                    <th>
+                                        Do
+                                    </th>
+                                    <th>
+                                        Počet kroků
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var activity in dailyChart.Activity)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a>
+                                                @activity.Name
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a>
+                                                @activity.Od.ToString("HH:mm")
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a>
+                                                @activity.Do.ToString("HH:mm")
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a>
+                                                @activity.Steps
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                     <!-- <div id="updateDiv">-->
                     <!-- ajax content will load here -->
                     <!-- you can put the form inside this div -->
@@ -108,11 +128,11 @@
                         </button>
                     </form>
                 </div>
-                    <div div class="col-sm h-50">
-                        <canvas id=@dailyChart.VariablePieName></canvas>
-                    </div>
+                <div div class="col-sm h-50">
+                    <canvas id=@dailyChart.VariablePieName></canvas>
                 </div>
-            </div>
+        </div>
+    </div>
     }
 </div>
 
@@ -153,16 +173,16 @@
               startDate: @Html.Raw(Json.Serialize(Model.Od)),
               endDate: @Html.Raw(Json.Serialize(Model.Do)),
             locale: {
-                format: 'DD/MM/YYYY HH:mm'
+                format: 'DD.MM.YYYY HH:mm'
             }
             },
                 function (start, end, label) {
                     var Model_Od = document.getElementById("Model_Od");
                     var Model_Do = document.getElementById("Model_Do");
-                    Model_Od.innerHTML = start.format('DD/MM/YYYY HH:mm');
-                    Model_Od.value = start.format('DD/MM/YYYY HH:mm');
-                    Model_Do.innerHTML = end.format('DD/MM/YYYY HH:mm');
-                    Model_Do.value = end.format('DD/MM/YYYY HH:mm');
+                    Model_Od.innerHTML = start.format('DD.MM.YYYY HH:mm');
+                    Model_Od.value = start.format('DD.MM.YYYY HH:mm');
+                    Model_Do.innerHTML = end.format('DD.MM.YYYY HH:mm');
+                    Model_Do.value = end.format('DD.MM.YYYY HH:mm');
                    // window.location.href = '@Url.Action("ChangeDate", "Summary")' + '?Od=' + start.format('DD/MM/YYYY HH:mm') + '&Do=' + end.format('DD/MM/YYYY HH:mm') + '&User=' + @Html.Raw(Json.Serialize(Model.UserId)) + '&GroupBy=' + document.getElementById("minuteRange").value;
                 });
         });

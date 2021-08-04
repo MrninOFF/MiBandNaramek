@@ -59,21 +59,20 @@ namespace MiBandNaramek.Controllers
 
             this.LoadSummaryHelperData();
 
-            return View(new SummaryViewData() {
+            return View(new SummaryViewModel() {
                 User = _userManager.FindByIdAsync(UserId).Result,
-                SummaryHeartRate = LoadSummaryHeartRate(DateTimeStart, DateTimeEnd),
                 SummaryChart = LoadSummaryChart(DateTimeStart, DateTimeEnd),
                 DailyCharts = LoadSummaryDailyCharts(DateTimeStart, DateTimeEnd, 1),
-                Activity = LoadActivityData(DateTimeStart, DateTimeEnd),
-                Do = DateTimeEnd.ToString("dd/MM/yyyy 06:00", CultureInfo.InvariantCulture),
-                Od = DateTimeStart.ToString("dd/MM/yyyy 06:00", CultureInfo.InvariantCulture),
+                /* Activity = LoadActivityData(DateTimeStart, DateTimeEnd), */
+                Do = DateTimeEnd.ToString("dd.MM.yyyy 06:00", CultureInfo.InvariantCulture),
+                Od = DateTimeStart.ToString("dd.MM.yyyy 06:00", CultureInfo.InvariantCulture),
                 UserId = UserId,
                 GroupByMin = 1
             });
         }
 
         [HttpPost]
-        public ActionResult ChangeDate(SummaryViewData Model)
+        public ActionResult ChangeDate(SummaryViewModel Model)
         {
             // Nastavím časy dle požadavku od uživatele
 
@@ -95,12 +94,11 @@ namespace MiBandNaramek.Controllers
 
             // _notifyService.Success($"Načteno");
 
-            return View("Index", new SummaryViewData() {
+            return View("Index", new SummaryViewModel() {
                 User = _userManager.FindByIdAsync(UserId).Result,
-                SummaryHeartRate = LoadSummaryHeartRate(DateTimeStart, DateTimeEnd),
                 SummaryChart = LoadSummaryChart(DateTimeStart, DateTimeEnd),
                 DailyCharts = LoadSummaryDailyCharts(DateTimeStart, DateTimeEnd, Model.GroupByMin),
-                Activity = LoadActivityData(DateTimeStart, DateTimeEnd),
+                /* Activity = LoadActivityData(DateTimeStart, DateTimeEnd), */
                 Do = Model.Do,
                 Od = Model.Od,
                 UserId = UserId,
@@ -168,6 +166,7 @@ namespace MiBandNaramek.Controllers
                     Name = selectedDate.ToString("dd.MM.yyyy"),
                     VariableName = "DEN" + selectedDate.ToString("ddMMyyyy") + "GRAF",
                     VariablePieName = "DEN" + selectedDate.ToString("ddMMyyyy") + "PIEGRAF",
+                    Activity = LoadActivityData(DateTimeStart, DateTimeEnd), 
                     Date = selectedDate.Date,
                     Note = _applicationDbContext.SummaryNote.Where(where => where.UserId == UserId && where.Date == selectedDate.Date).Select(select => select.Note).FirstOrDefault()
                 }) ;
@@ -258,6 +257,8 @@ namespace MiBandNaramek.Controllers
             {
                 Label = "Graf Aktivit",
                 BackgroundColor = new List<ChartColor>() {},
+                BorderWidth = 0,
+                HoverBorderWidth = 0,
                 HoverBackgroundColor = new List<ChartColor>() {}
             };
 
@@ -419,12 +420,7 @@ namespace MiBandNaramek.Controllers
         // Funkce pro načtení RAW dat ve vybraném období
         private void LoadSummaryHelperData()
         {
-            LoadedSummaryHelperData = new List<SummaryHelper>();
-            LoadedSummaryHelperData = _applicationDbContext.MeasuredData
-                                        .Where(option => option.Date >= DateTimeStart && option.Date <= DateTimeEnd && option.UserId == UserId)
-                                        .Select(select => new SummaryHelper { DoubleValue = Convert.ToDouble(select.HeartRate), DateTimeValue = select.Date, Steps = select.Steps, Intensity = Convert.ToDouble(select.Intensity), Kind = select.Kind })
-                                        .OrderBy(orderBy => orderBy.DateTimeValue)
-                                        .ToList();
+            LoadedSummaryHelperData = MeasuredDataService.LoadSummaryHelperData(_applicationDbContext, UserId, DateTimeStart, DateTimeEnd);
         }
 
         private List<SummaryHelper> LoadMeasuredData (DateTime startDateTime, DateTime endDateTime, int groupBy)
@@ -465,11 +461,12 @@ namespace MiBandNaramek.Controllers
             }
         }
 
-        private List<ActivityData> LoadActivityData (DateTime startDateTime, DateTime endDateTime)
+        private List<(string Name, int Steps, DateTime Od, DateTime Do)> LoadActivityData (DateTime startDateTime, DateTime endDateTime)
         {
             List<ActivityData> activityData = _applicationDbContext.ActivityData.Where(option => option.UserId == UserId).Select(select => new ActivityData() { Id = select.Id, DateStart = select.DateStart, DateEnd = select.DateEnd, Steps = select.Steps, Kind = select.Kind }).ToList();
+            List<(string Name, int Steps, DateTime Od, DateTime Do)> Data = activityData.Select(select => (Name: ActivityConstant.GetConstantNameById(select.Kind), Steps: select.Steps, Od: select.DateStart, Do: select.DateEnd)).ToList();
             // activityData.ForEach(select => select.Steps = ActivityDataService.CountStepsForActivity(_applicationDbContext, select.Id, select.Steps));
-            return activityData;
+            return Data.Take(3).ToList();
         }
 
         private List<SummaryHeartRate> LoadSummaryHeartRate (DateTime startDateTime, DateTime endDateTime)
