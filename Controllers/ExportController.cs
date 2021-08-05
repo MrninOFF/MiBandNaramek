@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MiBandNaramek.Controllers
@@ -91,7 +92,25 @@ namespace MiBandNaramek.Controllers
             stream.Position = 0;
 
             return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{nazev}.xlsx");
-            
+        }
+
+        public async Task<ContentResult> ExportUserMeasuredDataToJSON(string userId, string TextOd, string TextDo)
+        {
+
+            DateTime Od = DateTime.Parse(TextOd);
+            DateTime Do = DateTime.Parse(TextDo);
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            UserMeasuredDataToJSON data = new UserMeasuredDataToJSON()
+            {
+                UserId = userId,
+                UserWeight = user.Wight,
+                UserHeight = user.Height,
+                SummaryData = MeasuredDataService.LoadSummaryHelperData(_applicationDbContext, userId, Od, Do)
+            };
+
+            return Content(JsonSerializer.Serialize(data));
         }
     }
 }

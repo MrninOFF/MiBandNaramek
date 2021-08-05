@@ -2,16 +2,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace MiBandNaramek.Models.Helpers
 {
     public class SummaryHelper
     {
+        [JsonPropertyName("date_time")]
         public DateTime DateTimeValue { get; set; }
+        [JsonPropertyName("heart_rate")]
         public double DoubleValue { get; set; }
+        [JsonPropertyName("steps")]
         public int Steps { get; set; }
+        [JsonPropertyName("intensity")]
         public double Intensity { get; set; }
+        [JsonPropertyName("kind")]
         public int Kind { get; set; }
     }
 

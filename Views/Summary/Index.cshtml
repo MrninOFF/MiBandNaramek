@@ -45,7 +45,7 @@
                 <a style='margin-right:16px' asp-controller="Export" asp-action="ExportUserMeasuredDataToExcel" asp-route-UserId="@Model.UserId" asp-route-TextOd="@Model.Od.ToString()" asp-route-TextDo="@Model.Do.ToString()" class="dropdown-item">
                     <i class="fas fa-file-excel"></i> Do Excelu
                 </a>
-                <a style='margin-right:16px' asp-controller="User" asp-action="Update" asp-route-User="@Model.UserId" class="dropdown-item">
+                <a style='margin-right:16px' target="_blank" asp-controller="Export" asp-action="ExportUserMeasuredDataToJSON" asp-route-UserId="@Model.UserId" asp-route-TextOd="@Model.Od.ToString()" asp-route-TextDo="@Model.Do.ToString()" class="dropdown-item">
                     <i class="fas fa-align-justify"></i> Do JSON
                 </a>
             </div>
