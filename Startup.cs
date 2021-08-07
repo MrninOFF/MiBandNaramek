@@ -141,6 +141,8 @@ namespace MiBandNaramek
                 options.FallbackPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
+                options.AddPolicy("IsAllowedToUseApp",
+                    policy => policy.RequireRole("Admin", "Doctor", "User"));
             });
 
             services.AddControllers();

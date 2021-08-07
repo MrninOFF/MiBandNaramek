@@ -1,6 +1,40 @@
 ﻿@{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "About";
 }
 <h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<p>Tato webová aplikace slouží ke sběru dat z Xiaomi Mi Band náramků. A následné vizualizaci přijatých dat.</p>
+
+<h2>1 Registrace</h2>
+<p>Na webové stránce se může registrovat kdokoli, ale bez ověření od Správce systémů není možné web využívat.</p>
+
+<h2>2 Navigace na hlavní stránce</h2>
+<p>Po úspěšném odeslání dat má možnost každý pacient nahlížet na svá data.</p>
+
+<h3>2.1 Výběr období</h3>
+<p>Po kliknutí na datum se uživateli zobrazí okno s výběrem datumů Od, Do. Lze vybrat i čas, který indikuje začátek dne, od kterého se graf vytvoří na následujících 24 h.</p>
+
+<h3>2.2 Posuvník minut</h3>
+<p>Jelikož grafy mohou být velice často nepřehledné. Je uživateli umožněno shlukovat měřená data po xx minutách, kde xx reprezentuje počet minut. Aritmetickým průměrem se vypočte Tep a Intensita pohybu v daném časovém rozpětí.</p>
+
+<h2>3 Export Dat</h2>
+<p>Aplikace umožňuje doktorům exportovat data do excelových souborů anebo do souborů JSON.</p>
+<h3>3.1 Excel</h3>
+<p>V Excelu jsou data reprezentovány obdobně jako v grafech. Každý list v Excelu reprezentuje jeden den (jeden graf).</p>
+<h3>3.2 JSON</h3>
+<p>V JSON jsou data kumulovány, kdy mají následnou strukturu:</p>
+<p>
+    { <br>
+    "user_id": STRING,<br>
+    "user_height": DECIMAL,<br>
+    "user_weight": DECIMAL,<br>
+    "measured_data":[<br>
+    { <br>
+    "date_time": DATETIME,<br>
+    "heart_rate": NUMBER,<br>
+    "steps": NUMBER,<br>
+    "intensity": NUMBER,<br>
+    "kind": NUMBER<br>
+    }, ...<br>
+    ]}<br>
+</p>

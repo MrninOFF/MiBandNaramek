@@ -1,0 +1,255 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@using System.Text.Json
+@model MiBandNaramek.Models.Helpers.SummaryViewModel;
+
+<div class="row">
+    <div class="col-sm h-50">
+        <h1>Pacient :</h1>
+        <h2>@Model.User.UserName</h2>
+        <div class="row col-sm h-25 align-content-center">
+            <label>Váha : &nbsp;</label>
+            <label>@Model.User.Wight kg</label>
+        </div>
+        <div class="row col-sm h-25 align-content-center">
+            <label>Výška : &nbsp;</label>
+            <label>@Model.User.Height cm</label>
+        </div>
+        <div class="row col-sm h-25 align-content-center">
+            <label>Telefon : &nbsp;</label>
+            <label>@Model.User.PhoneNumber</label>
+        </div>
+    </div>
+    <div class=" col-md h-50 m-1">
+        <form asp-area="" asp-controller="Summary" asp-action="ChangeDate" asp-route-User="@Model.UserId">
+            <h1>Vyberte období :</h1>
+            <input class="form-control form-control-lg" width=40 type="text" name="datetimes" />
+            <input asp-for="@Model.Od" id="Model_Od" name="Od" type="hidden" />
+            <input asp-for="@Model.Do" id="Model_Do" name="Do" type="hidden" />
+            <input asp-for="@Model.UserId" type="hidden" />
+            <h3 id="minutes" class="mt-2">Sjednocení po :</h3>
+            <div class="col-md">
+                <input type="range" min="1" max="20" step="1" asp-for=@Model.GroupByMin class="form-range w-50 align-self-md-center" id="minuteRange">
+                <button type="submit" id="save" class="btn btn-outline-primary ml-5">
+                    <i class="fas fa-frog"></i>
+                    Načíst
+                </button>
+            </div>
+        </form>
+        <div class="btn-group m-1">
+            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Export dat
+            </button>
+            <div class="dropdown-menu shadow animated--grow-in">
+                <a style='margin-right:16px' asp-controller="Export" asp-action="ExportUserMeasuredDataToExcel" asp-route-UserId="@Model.UserId" asp-route-TextOd="@Model.Od.ToString()" asp-route-TextDo="@Model.Do.ToString()" class="dropdown-item">
+                    <i class="fas fa-file-excel"></i> Do Excelu
+                </a>
+                <a style='margin-right:16px' target="_blank" asp-controller="Export" asp-action="ExportUserMeasuredDataToJSON" asp-route-UserId="@Model.UserId" asp-route-TextOd="@Model.Od.ToString()" asp-route-TextDo="@Model.Do.ToString()" class="dropdown-item">
+                    <i class="fas fa-align-justify"></i> Do JSON
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-md-3 mb-md-3">
+    <canvas id="SummaryChart"></canvas>
+</div>
+<!--
+    -->
+<div width="800">
+    @foreach (var dailyChart in Model.DailyCharts)
+    {
+    <div class="shadow p-3 mb-5 bg-white rounded">
+        <div>
+            <h1>@dailyChart.Name</h1>
+            <canvas id=@dailyChart.VariableName></canvas>
+        </div>
+        <div class="row pt-3">
+                <div class="col-sm h-50">
+                    <div class="col-sm w-40">
+                        <table class="table table-striped" id="userTable">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Aktivita
+                                    </th>
+                                    <th>
+                                        Od
+                                    </th>
+                                    <th>
+                                        Do
+                                    </th>
+                                    <th>
+                                        Počet kroků
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var activity in dailyChart.Activity)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a>
+                                                @activity.Name
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a>
+                                                @activity.Od.ToString("HH:mm")
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a>
+                                                @activity.Do.ToString("HH:mm")
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a>
+                                                @activity.Steps
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- <div id="updateDiv">-->
+                    <!-- ajax content will load here -->
+                    <!-- you can put the form inside this div -->
+                    <!-- so after submit the result will replace the form controls -->
+                    <!-- </div>-->
+                    <form asp-area="" asp-controller="Summary" asp-action="UpdateUserNote" asp-route-userId="@Model.UserId" asp-route-date="@dailyChart.Date" class="d-inline" data-ajax-loading="#loading" data-ajax-mode="replace" data-ajax-update="#updateDiv" data-ajax-success="Success" data-ajax-failure="Failure" data-ajax="true">
+                        <h3>Poznámka:</h3>
+                        <textarea type="text" name="note" asp-for="@dailyChart.Note" rows="3" class="form-control m-1"></textarea>
+                        <button type="submit" id="save" class="btn btn-outline-danger m-1">
+                            <i class="fas fa-notes-medical"></i>
+                            Uložit
+                        </button>
+                    </form>
+                </div>
+                <div div class="col-sm h-50">
+                    <canvas id=@dailyChart.VariablePieName></canvas>
+                </div>
+        </div>
+    </div>
+    }
+</div>
+
+</div>
+
+@section Scripts {
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+
+
+    <script type="text/javascript">
+           @Html.Raw(Model.SummaryChart.CreateChartCode("SummaryChart"));
+    </script>
+
+    @foreach (var dailyChart in Model.DailyCharts)
+    {
+        <script type="text/javascript">
+           @Html.Raw(dailyChart.Chart.CreateChartCode(dailyChart.VariableName));
+        </script>
+        <script type="text/javascript">
+           @Html.Raw(dailyChart.PieChart.CreateChartCode(dailyChart.VariablePieName));
+        </script>
+    }
+
+    <script>
+        $(function () {
+            console.log(@Html.Raw(Json.Serialize(Model.Od)));
+            console.log(@Html.Raw(Json.Serialize(Model.Do)));
+            $('input[name="datetimes"]').daterangepicker({
+              showWeekNumbers: true,
+              autoApply: true,
+              timePicker24Hour: true,
+              timePicker: true,
+              opens: 'right',
+              startDate: @Html.Raw(Json.Serialize(Model.Od)),
+              endDate: @Html.Raw(Json.Serialize(Model.Do)),
+            locale: {
+                format: 'DD.MM.YYYY HH:mm'
+            }
+            },
+                function (start, end, label) {
+                    var Model_Od = document.getElementById("Model_Od");
+                    var Model_Do = document.getElementById("Model_Do");
+                    Model_Od.innerHTML = start.format('DD.MM.YYYY HH:mm');
+                    Model_Od.value = start.format('DD.MM.YYYY HH:mm');
+                    Model_Do.innerHTML = end.format('DD.MM.YYYY HH:mm');
+                    Model_Do.value = end.format('DD.MM.YYYY HH:mm');
+                   // window.location.href = '@Url.Action("ChangeDate", "Summary")' + '?Od=' + start.format('DD/MM/YYYY HH:mm') + '&Do=' + end.format('DD/MM/YYYY HH:mm') + '&User=' + @Html.Raw(Json.Serialize(Model.UserId)) + '&GroupBy=' + document.getElementById("minuteRange").value;
+                });
+        });
+
+    </script>
+
+    <script>
+        var slider = document.getElementById("minuteRange");
+        var output = document.getElementById("minutes");
+        output.innerHTML = 'Sjednocení po : ' + slider.value + ' min.';
+
+        slider.oninput = function () {
+            output.innerHTML = 'Sjednocení po : ' + this.value + ' min.';
+        }
+    </script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery-ajax-unobtrusive@3.2.6/dist/jquery.unobtrusive-ajax.min.js"></script>
+
+    <script>
+        Success = function (varible) {
+            if (varible.success == false) {
+                const notyf = new Notyf({
+                    position: {
+                        x: 'center',
+                        y: 'top',
+                    }
+                });
+                notyf.error({
+                    duration: 4000,
+                    message: varible.responseText,
+                    dismissible: true,
+                    y: 'top'
+                });
+            }
+            else {
+                const notyf = new Notyf({
+                    position: {
+                        x: 'center',
+                        y: 'top',
+                    }
+                });
+                notyf.success({
+                    duration: 4000,
+                    message: varible,
+                    dismissible: true,
+                    y: 'top'
+                });
+            }
+        };
+        Failure = function () {
+            const notyf = new Notyf({
+                position: {
+                    x: 'center',
+                    y: 'top',
+                }
+            });
+            notyf.error({
+                duration: 4000,
+                message: varible,
+                dismissible: true,
+                y: 'top'
+            });
+        };
+    </script>
+
+}
+
+@{
+}

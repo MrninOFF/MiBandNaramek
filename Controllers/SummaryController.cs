@@ -394,10 +394,10 @@ namespace MiBandNaramek.Controllers
             if (!String.IsNullOrEmpty(YAxisID))
             {
                 lineDataSet.YAxisID = YAxisID;
-
                 intensityScale = new CartesianScale()
                 {
-                    Id = YAxisID,
+                    Id = YAxisID ,
+                    Display = true,
                     Type = "linear",
                     Position = "right",
                     Stacked = true,
@@ -407,6 +407,9 @@ namespace MiBandNaramek.Controllers
                         Display = true,
                         FontSize = 50,
                         Padding = 10,
+                        BeginAtZero = true,
+                        SuggestedMax = 250,
+                        SuggestedMin = 0,
                         Callback = "function (tick, index, ticks) { return numeral(tick).format('$ 0,0');}"
                     }
                 };
