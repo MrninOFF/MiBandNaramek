@@ -20,7 +20,7 @@ using MiBandNaramek.Constants;
 
 namespace MiBandNaramek.Controllers
 {
-    [AllowAnonymous]
+    [Authorize(Policy = "IsAllowedToManageApp")]
     public class SummaryController : Controller
     {
 

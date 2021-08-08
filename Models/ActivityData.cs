@@ -65,12 +65,5 @@ namespace MiBandNaramek.Models
         [JsonIgnore]
         [ForeignKey(nameof(UserId))]
         public MiBandNaramekUser User { get; set; }
-
-        /********************************************/
-
-        [JsonIgnore]
-        [NotMapped]
-        public string KindLogo { get; set; }
-
     }
 }

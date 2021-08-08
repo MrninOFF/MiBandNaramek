@@ -143,6 +143,8 @@ namespace MiBandNaramek
                     .Build();
                 options.AddPolicy("IsAllowedToUseApp",
                     policy => policy.RequireRole("Admin", "Doctor", "User"));
+                options.AddPolicy("IsAllowedToManageApp",
+                    policy => policy.RequireRole("Admin", "Doctor"));
             });
 
             services.AddControllers();

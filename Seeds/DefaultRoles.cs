@@ -15,8 +15,7 @@ namespace MiBandNaramek.Seeds
             await roleManager.CreateAsync(new IdentityRole(Roles.Admin.ToString()));
             await roleManager.CreateAsync(new IdentityRole(Roles.Doctor.ToString()));
             await roleManager.CreateAsync(new IdentityRole(Roles.User.ToString()));
-
-            
+            await roleManager.CreateAsync(new IdentityRole(Roles.Removed_User.ToString()));
         }
     }
 }

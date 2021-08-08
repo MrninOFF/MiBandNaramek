@@ -4,6 +4,7 @@ using MiBandNaramek.Constants;
 using MiBandNaramek.Data;
 using MiBandNaramek.Models.Helpers;
 using MiBandNaramek.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
@@ -16,6 +17,7 @@ using System.Threading.Tasks;
 
 namespace MiBandNaramek.Controllers
 {
+    [Authorize(Policy = "IsAllowedToManageApp")]
     public class ExportController : Controller
     {
 

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MiBandNaramek.Controllers
@@ -63,9 +64,19 @@ namespace MiBandNaramek.Controllers
             {
                 var myUser = _userManager.FindByIdAsync(userId).Result;
 
+                if (User.FindFirstValue(ClaimTypes.Role) == "Doctor" && (await _userManager.IsInRoleAsync(myUser,"Admin") || await _userManager.IsInRoleAsync(myUser, "Doctor")))
+                {
+                    _notyfService.Error($"Nelze upravovat jiné Doktory nebo Adminy !");
+                    model.User.Id = userId;
+                    model.UserSelectedRole = (await _userManager.GetRolesAsync(model.User)).FirstOrDefault();
+                    model.UserRoles = _roleManager.Roles.ToList();
+                    return View("Update", model);
+                }
+
                 myUser.Height = model.User.Height;
                 myUser.Wight = model.User.Wight;
                 myUser.PhoneNumber = model.User.PhoneNumber;
+                myUser.Email = model.User.Email;
 
                 await _userManager.UpdateAsync(myUser);
 
@@ -73,6 +84,17 @@ namespace MiBandNaramek.Controllers
 
                 if (currentRole != model.UserSelectedRole)
                 {
+                    string roleName = (await _roleManager.FindByIdAsync(model.UserSelectedRole)).Name;
+
+                    if (User.FindFirstValue(ClaimTypes.Role) == "Doctor" && (roleName == "Admin" || roleName == "Doctor"))
+                    {
+                        _notyfService.Error($"Nelze přiřadit roly {model.UserSelectedRole} !");
+                        model.User.Id = userId;
+                        model.UserSelectedRole = (await _userManager.GetRolesAsync(model.User)).FirstOrDefault();
+                        model.UserRoles = _roleManager.Roles.ToList();
+                        return View("Update", model);
+                    }
+
                     if (currentRole != null)
                         await _userManager.RemoveFromRoleAsync(myUser, currentRole);
                     await _userManager.AddToRoleAsync(myUser, (await _roleManager.FindByIdAsync(model.UserSelectedRole)).Name);

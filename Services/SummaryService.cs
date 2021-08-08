@@ -241,11 +241,11 @@ namespace MiBandNaramek.Services
             GenerateLineForChart("Steps", null, stepsDataForGraph, ChartColor.FromRgb(125, 55, 255), 0, out lineDataSet, out intensityScale);
             data.Datasets.Add(lineDataSet);
 
-            GenerateLineForChart("Srdeční tep", "heart", hearRateDataForGraph, ChartColor.FromRgb(255, 40, 70), 0, out lineDataSet, out intensityScale);
+            GenerateLineForChart("Srdeční tep", "heart", hearRateDataForGraph, ChartColor.FromRgb(255, 40, 70), 260, out lineDataSet, out intensityScale);
             data.Datasets.Add(lineDataSet);
             chart.Options.Scales.YAxes.Add(intensityScale);
 
-            GenerateLineForChart("Intenzita", "intensity", intesityDataForGraph, ChartColor.FromRgb(100, 255, 1), 0, out lineDataSet, out intensityScale);
+            GenerateLineForChart("Intenzita", "intensity", intesityDataForGraph, ChartColor.FromRgb(100, 255, 1), 260, out lineDataSet, out intensityScale);
             lineDataSet.Fill = "true";
             data.Datasets.Add(lineDataSet);
             chart.Options.Scales.YAxes.Add(intensityScale);
@@ -274,10 +274,12 @@ namespace MiBandNaramek.Services
             double stepsTotal = 0;
             foreach (var measure in LoadMeasuredData(loadedSummaryHelperData, startDateTime, endDateTime, groupBy))
             {
+                measure.DoubleValue = measure.DoubleValue == 255 ? 0 : measure.DoubleValue;
                 // TODO Možnost upgradu
                 if (measure.DoubleValue >= 0 && measure.DoubleValue <= 255)
                 {
                     // Odstranění 255 dat - Nahrazení normalní hodnotou
+                    
                     if (measure.DoubleValue >= 255 || measure.DoubleValue < 1)
                     {
                         if (hearRateDataForGraph.Count > 0)
@@ -337,7 +339,7 @@ namespace MiBandNaramek.Services
                         FontSize = 50,
                         Padding = 10,
                         BeginAtZero = true,
-                        SuggestedMax = 250,
+                        SuggestedMax = maxValue,
                         SuggestedMin = 0,
                         Callback = "function (tick, index, ticks) { return numeral(tick).format('$ 0,0');}"
                     }

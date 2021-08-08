@@ -9,6 +9,7 @@ namespace MiBandNaramek.Constants
     {
         Admin,
         Doctor,
-        User
+        User,
+        Removed_User
     }
 }
