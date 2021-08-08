@@ -5,6 +5,7 @@
     <UserSecretsId>aspnet-MiBandNaramek-3805CFB1-4933-42E9-91FA-BFF72AF1B224</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>.</DockerfileContext>
+    <DockerComposeProjectPath>docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
   <ItemGroup>

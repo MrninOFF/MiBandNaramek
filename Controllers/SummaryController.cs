@@ -87,8 +87,10 @@ namespace MiBandNaramek.Controllers
             if (String.IsNullOrEmpty(UserId))
                 UserId = Model.UserId;
 
-            DateTimeStart = DateTime.Parse(Model.Od);
-            DateTimeEnd = DateTime.Parse(Model.Do).AddDays(1);
+            string displayFormat = "dd.MM.yyyy HH:mm";
+
+            DateTimeStart = DateTime.ParseExact(Model.Od, displayFormat, CultureInfo.InvariantCulture);
+            DateTimeEnd = DateTime.ParseExact(Model.Do, displayFormat, CultureInfo.InvariantCulture).AddDays(1);
 
             this.LoadSummaryHelperData();
 

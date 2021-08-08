@@ -78,8 +78,10 @@ namespace MiBandNaramek.Controllers
 
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            DateTime dateTimeStart = DateTime.Parse(Model.Od);
-            DateTime dateTimeEnd = DateTime.Parse(Model.Do).AddDays(1);
+            string displayFormat = "dd.MM.yyyy HH:mm";
+
+            DateTime dateTimeStart = DateTime.ParseExact(Model.Od, displayFormat, CultureInfo.InvariantCulture);
+            DateTime dateTimeEnd = DateTime.ParseExact(Model.Do, displayFormat, CultureInfo.InvariantCulture).AddDays(1);
 
             var loadedSummaryHelperData = this.LoadSummaryHelperData(userId, dateTimeStart, dateTimeEnd);
 

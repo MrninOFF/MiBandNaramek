@@ -49,7 +49,7 @@ namespace MiBandNaramek
 
 
             var server = Configuration["DBServer"] ?? "192.168.88.251";
-            var port = Configuration["DBPort"] ?? "3306";
+            var port = Configuration["DBPort"] ?? "33020";  // Není potøeba
             var user = Configuration["DBUser"] ?? "root";
             var password = Configuration["DBPassword"] ?? "Pamariadbw0rd2021";
             var database = Configuration["Database"] ?? "UHKMiBandNaramek";

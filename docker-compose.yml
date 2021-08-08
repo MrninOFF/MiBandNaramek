@@ -1,0 +1,21 @@
+version: '3.4'
+
+services:
+  mibandnaramek:
+    image: mibandnaramek
+    ports:
+      - "80"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+        - mariadb
+  mariadb:
+    image: mariadb
+    ports:
+        - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "Pamariadbw0rd2021"
+      MYSQL_DATABASE : "UHKMiBandNaramek"
+      MYSQL_USER : "Mrnin"
+      MYSQL_PASSWORD : "Pamariadbw0rd2021"

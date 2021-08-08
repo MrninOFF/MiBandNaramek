@@ -54,7 +54,7 @@ namespace MiBandNaramek.Seeds
 
                     user = await userManager.FindByEmailAsync(defaultUser.Email);
 
-                    if (user != null)
+                    if (user != null && i%5 == 0)
                         await SeedMiBandData(user, dbContext);
                 }
             }
