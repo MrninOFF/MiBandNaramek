@@ -47,8 +47,10 @@ namespace MiBandNaramek.Services
                 case 0x53:
                 case 0x63:
                 case 0x73:
+                case 243:
                     // Charging, Nenošen
-                    return ChartColor.FromRgb(200, 50, 50);
+                    // return ChartColor.FromRgb(200, 50, 50);
+                    return ChartColor.FromRgb(200, 200, 200);
                 case 0x12:
                 case 0x22:
                 case 0x32:

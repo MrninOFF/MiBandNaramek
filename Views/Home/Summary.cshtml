@@ -6,7 +6,7 @@
 
 <div class="row">
     <div class="col-sm h-50">
-        <h1>Pacient :</h1>
+        <h1>Uživatel :</h1>
         <h2>@Model.User.UserName</h2>
         <div class="row col-sm h-25 align-content-center">
             <label>Váha : &nbsp;</label>
@@ -16,13 +16,9 @@
             <label>Výška : &nbsp;</label>
             <label>@Model.User.Height cm</label>
         </div>
-        <div class="row col-sm h-25 align-content-center">
-            <label>Telefon : &nbsp;</label>
-            <label>@Model.User.PhoneNumber</label>
-        </div>
     </div>
     <div class=" col-md h-50 m-1">
-        <form asp-area="" asp-controller="Summary" asp-action="ChangeDate" asp-route-User="@Model.UserId">
+        <form asp-area="" asp-controller="Home" asp-action="ChangeDate" asp-route-User="@Model.UserId">
             <h1>Vyberte období :</h1>
             <input class="form-control form-control-lg" width=40 type="text" name="datetimes" />
             <input asp-for="@Model.Od" id="Model_Od" name="Od" type="hidden" />
@@ -37,19 +33,6 @@
                 </button>
             </div>
         </form>
-        <div class="btn-group m-1">
-            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Export dat
-            </button>
-            <div class="dropdown-menu shadow animated--grow-in">
-                <a style='margin-right:16px' asp-controller="Export" asp-action="ExportUserMeasuredDataToExcel" asp-route-UserId="@Model.UserId" asp-route-TextOd="@Model.Od.ToString()" asp-route-TextDo="@Model.Do.ToString()" class="dropdown-item">
-                    <i class="fas fa-file-excel"></i> Do Excelu
-                </a>
-                <a style='margin-right:16px' target="_blank" asp-controller="Export" asp-action="ExportUserMeasuredDataToJSON" asp-route-UserId="@Model.UserId" asp-route-TextOd="@Model.Od.ToString()" asp-route-TextDo="@Model.Do.ToString()" class="dropdown-item">
-                    <i class="fas fa-align-justify"></i> Do JSON
-                </a>
-            </div>
-        </div>
     </div>
 </div>
 <div class="mt-md-3 mb-md-3">
@@ -119,14 +102,9 @@
                     <!-- you can put the form inside this div -->
                     <!-- so after submit the result will replace the form controls -->
                     <!-- </div>-->
-                    <form asp-area="" asp-controller="Summary" asp-action="UpdateUserNote" asp-route-userId="@Model.UserId" asp-route-date="@dailyChart.Date" class="d-inline" data-ajax-loading="#loading" data-ajax-mode="replace" data-ajax-update="#updateDiv" data-ajax-success="Success" data-ajax-failure="Failure" data-ajax="true">
                         <h3>Poznámka:</h3>
-                        <textarea type="text" name="note" asp-for="@dailyChart.Note" rows="3" class="form-control m-1"></textarea>
-                        <button type="submit" id="save" class="btn btn-outline-danger m-1">
-                            <i class="fas fa-notes-medical"></i>
-                            Uložit
-                        </button>
-                    </form>
+                        <textarea type="text" name="note" asp-for="@dailyChart.Note" rows="3" class="form-control m-1" readonly></textarea>
+
                 </div>
                 <div div class="col-sm h-50">
                     <canvas id=@dailyChart.VariablePieName></canvas>
@@ -198,57 +176,6 @@
             output.innerHTML = 'Sjednocení po : ' + this.value + ' min.';
         }
     </script>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/jquery-ajax-unobtrusive@3.2.6/dist/jquery.unobtrusive-ajax.min.js"></script>
-
-    <script>
-        Success = function (varible) {
-            if (varible.success == false) {
-                const notyf = new Notyf({
-                    position: {
-                        x: 'center',
-                        y: 'top',
-                    }
-                });
-                notyf.error({
-                    duration: 4000,
-                    message: varible.responseText,
-                    dismissible: true,
-                    y: 'top'
-                });
-            }
-            else {
-                const notyf = new Notyf({
-                    position: {
-                        x: 'center',
-                        y: 'top',
-                    }
-                });
-                notyf.success({
-                    duration: 4000,
-                    message: varible,
-                    dismissible: true,
-                    y: 'top'
-                });
-            }
-        };
-        Failure = function () {
-            const notyf = new Notyf({
-                position: {
-                    x: 'center',
-                    y: 'top',
-                }
-            });
-            notyf.error({
-                duration: 4000,
-                message: varible,
-                dismissible: true,
-                y: 'top'
-            });
-        };
-    </script>
-
 }
 
 @{
