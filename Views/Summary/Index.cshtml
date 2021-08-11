@@ -66,26 +66,37 @@
             <canvas id=@dailyChart.VariableName></canvas>
         </div>
         <div class="row pt-3">
-                <div class="col-sm h-50">
-                    <div class="col-sm w-40">
-                        <table class="table table-striped" id="userTable">
-                            <thead>
+            <div class="col-sm h-50">
+                <h3>Aktivity:</h3>
+                <div class="col-sm w-40">
+                    <table class="table table-striped" id="userTable">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Aktivita
+                                </th>
+                                <th>
+                                    Od
+                                </th>
+                                <th>
+                                    Do
+                                </th>
+                                <th>
+                                    Počet kroků
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (dailyChart.Activity.Count < 1)
+                            {
                                 <tr>
-                                    <th>
-                                        Aktivita
-                                    </th>
-                                    <th>
-                                        Od
-                                    </th>
-                                    <th>
-                                        Do
-                                    </th>
-                                    <th>
-                                        Počet kroků
-                                    </th>
+                                    <td colspan="4" class="text-center">
+                                        Uživatel nemá aktivity
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
+                            }
+                            else
+                            {
                                 @foreach (var activity in dailyChart.Activity)
                                 {
                                     <tr>
@@ -111,23 +122,24 @@
                                         </td>
                                     </tr>
                                 }
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- <div id="updateDiv">-->
-                    <!-- ajax content will load here -->
-                    <!-- you can put the form inside this div -->
-                    <!-- so after submit the result will replace the form controls -->
-                    <!-- </div>-->
-                    <form asp-area="" asp-controller="Summary" asp-action="UpdateUserNote" asp-route-userId="@Model.UserId" asp-route-date="@dailyChart.Date" class="d-inline" data-ajax-loading="#loading" data-ajax-mode="replace" data-ajax-update="#updateDiv" data-ajax-success="Success" data-ajax-failure="Failure" data-ajax="true">
-                        <h3>Poznámka:</h3>
-                        <textarea type="text" name="note" asp-for="@dailyChart.Note" rows="3" class="form-control m-1"></textarea>
-                        <button type="submit" id="save" class="btn btn-outline-danger m-1">
-                            <i class="fas fa-notes-medical"></i>
-                            Uložit
-                        </button>
-                    </form>
+                            }
+                        </tbody>
+                    </table>
                 </div>
+                <!-- <div id="updateDiv">-->
+                <!-- ajax content will load here -->
+                <!-- you can put the form inside this div -->
+                <!-- so after submit the result will replace the form controls -->
+                <!-- </div>-->
+                <form asp-area="" asp-controller="Summary" asp-action="UpdateUserNote" asp-route-userId="@Model.UserId" asp-route-date="@dailyChart.Date" class="d-inline" data-ajax-loading="#loading" data-ajax-mode="replace" data-ajax-update="#updateDiv" data-ajax-success="Success" data-ajax-failure="Failure" data-ajax="true">
+                    <h3>Poznámka:</h3>
+                    <textarea type="text" name="note" asp-for="@dailyChart.Note" rows="3" class="form-control m-1"></textarea>
+                    <button type="submit" id="save" class="btn btn-outline-danger m-1">
+                        <i class="fas fa-notes-medical"></i>
+                        Uložit
+                    </button>
+                </form>
+            </div>
                 <div div class="col-sm h-50">
                     <canvas id=@dailyChart.VariablePieName></canvas>
                 </div>
